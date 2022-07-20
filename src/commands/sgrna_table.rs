@@ -76,3 +76,39 @@ pub fn run(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use fxread::{FastxRead, Record, FastaReader, FastqReader};
+    use super::Table;
+
+    fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] = b">AP2S1_ASJDAJSDAS\nACT\n>AP2S2_ASDKJASD\nACC\n>AP2S3_AOSDJIASJ\nACT\n";
+        Box::new(FastaReader::new(sequence))
+    }
+
+    fn fastq_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] = b"@AP2S1_ASJDAJSDAS\nACT\n+\n123\n@AP2S2_ASDKJASD\nACC\n+\n123\n@AP2S3_AOSDJIASJ\nACT\n+\n123\n";
+        Box::new(FastqReader::new(sequence))
+    }
+
+    #[test]
+    fn table_fasta() {
+        let reader = fasta_reader();
+        let unique = Table::from_reader(reader);
+        assert_eq!(unique.num_records(), 3);
+        assert_eq!(unique.map.get("AP2S1_ASJDAJSDAS"), Some(&"AP2S1".to_string()));
+        assert_eq!(unique.map.get("AP2S2_ASDKJASD"), Some(&"AP2S2".to_string()));
+        assert_eq!(unique.map.get("AP2S3_AOSDJIASJ"), Some(&"AP2S3".to_string()));
+    }
+
+    #[test]
+    fn table_fastq() {
+        let reader = fastq_reader();
+        let unique = Table::from_reader(reader);
+        assert_eq!(unique.num_records(), 3);
+        assert_eq!(unique.map.get("AP2S1_ASJDAJSDAS"), Some(&"AP2S1".to_string()));
+        assert_eq!(unique.map.get("AP2S2_ASDKJASD"), Some(&"AP2S2".to_string()));
+        assert_eq!(unique.map.get("AP2S3_AOSDJIASJ"), Some(&"AP2S3".to_string()));
+    }
+}
