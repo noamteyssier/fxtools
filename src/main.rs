@@ -19,7 +19,7 @@ enum Commands {
     Unique {
 
         #[clap(short, long, value_parser)]
-        /// Input FAST[AQ] to Filter on Unique / Duplicate Sequences
+        /// Input FASTA/Q to Filter on Unique / Duplicate Sequences
         input: String,
 
         #[clap(short, long, value_parser)]

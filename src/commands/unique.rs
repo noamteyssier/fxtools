@@ -49,8 +49,6 @@ impl Unique {
         self.null.len()
     }
 
-
-
     /// Reads in the records and performs the unique matching
     fn build(
         reader: Box<dyn FastxRead<Item = Record>>) -> (HashMap<String, Record>, HashMap<String, Vec<Record>>) 
