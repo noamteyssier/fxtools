@@ -2,6 +2,7 @@
 name = "fxtools"
 version = "0.1.0"
 edition = "2021"
+description = "A collection of commandline Fasta/Fastq utility tools"
 documentation = "https://docs.rs/fxtools"
 repository = "https://github.com/noamteyssier/fxtools"
 license = "MIT"
