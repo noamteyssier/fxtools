@@ -203,3 +203,38 @@ pub fn run(
     
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use fxread::{FastxRead, Record, FastaReader, FastqReader};
+    use super::Unique;
+
+    fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] = b">seq.0\nACT\n>seq.1\nACC\n>seq.2\nACT\n";
+        Box::new(FastaReader::new(sequence))
+    }
+
+    fn fastq_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] = b"@seq.0\nACT\n+\n123\n@seq.1\nACC\n+\n123\n@seq.2\nACT\n+\n123\n";
+        Box::new(FastqReader::new(sequence))
+    }
+
+    #[test]
+    fn unique_fasta() {
+        let reader = fasta_reader();
+        let unique = Unique::from_reader(reader);
+        assert_eq!(unique.num_null_records(), 2);
+        assert_eq!(unique.num_null_sequences(), 1);
+        assert_eq!(unique.num_passing(), 1);
+    }
+
+    #[test]
+    fn unique_fastq() {
+        let reader = fastq_reader();
+        let unique = Unique::from_reader(reader);
+        assert_eq!(unique.num_null_records(), 2);
+        assert_eq!(unique.num_null_sequences(), 1);
+        assert_eq!(unique.num_passing(), 1);
+    }
+
+}
