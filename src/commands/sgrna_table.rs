@@ -3,21 +3,26 @@ use spinners::{Spinner, Spinners};
 use std::{collections::HashMap, fs::File, io::Write};
 use fxread::{FastxRead, Record};
 
+/// Creates a mapping of gene names to sgRNA names
 struct Table {
     map: HashMap<String, String>
 }
 impl Table {
+    
+    /// creates a table from a [`FastxRead`] reader.
     pub fn from_reader(reader: Box<dyn FastxRead<Item = Record>>) -> Self  
     {
         let map = Self::build(reader);
         Self { map }
     }
 
+    /// Returns the number of objects mapped
     pub fn num_records(&self) -> usize 
     {
         self.map.len()
     }
 
+    /// main build iterator
     fn build(reader: Box<dyn FastxRead<Item = Record>>) -> HashMap<String, String>
     {
         reader
@@ -25,24 +30,33 @@ impl Table {
             .collect()
     }
 
+    /// parses the gene name from the record header
     fn parse_header(record: &Record) -> String 
     {
         record.id().split('_').next().unwrap().to_string()
     }
 
+    /// exposes a simple iterator function over the internal map
     fn iter(&self) -> impl Iterator<Item = (&String, &String)>{
         self.map.iter()
     }
 }
 
-fn write_to_stdout(table: Table, delim: &str)
+/// Writes the table to stdout
+fn write_to_stdout(
+        table: Table, 
+        delim: &str)
 {
     table
         .iter()
         .for_each(|(k, v)| println!("{}{}{}", k, delim, v));
 }
 
-fn write_to_file(table: Table, path: &str, delim: &str) -> Result<()>
+/// Writes the table to a file
+fn write_to_file(
+        table: Table, 
+        path: &str, 
+        delim: &str) -> Result<()>
 {
     let mut file = File::create(path)?;
     table
