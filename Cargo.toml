@@ -1,0 +1,12 @@
+[package]
+name = "fxtools"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+fxread = "0.1"
+clap = { version = "3", features = ["derive"] }
+spinners = "4"
+anyhow = "1"
