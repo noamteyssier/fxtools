@@ -44,3 +44,57 @@ pub fn run(
     };
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use fxread::{FastxRead, Record, FastaReader, FastqReader};
+    use super::write_to_stdout;
+
+    fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] = b">ap2s1_asjdajsdas\nact\n>ap2s1_asdkjasd\nacc\n>ap2s2_aosdjiasj\nact\n";
+        Box::new(FastaReader::new(sequence))
+    }
+
+    fn invalid_fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] = b">ap2s1_asjdajsdas\nbrb\n>ap2s1_asdkjasd\nacc\n>ap2s2_aosdjiasj\nact\n";
+        Box::new(FastaReader::new(sequence))
+    }
+    
+
+    fn fastq_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] = b"@ap2s1_asjdajsdas\nact\n+\n123\n@ap2s1_asdkjasd\nacc\n+\n123\n@ap2s2_aosdjiasj\nact\n+\n123\n";
+        Box::new(FastqReader::new(sequence))
+    }
+
+    fn invalid_fastq_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] = b"@ap2s1_asjdajsdas\nbrb\n+\n123\n@ap2s1_asdkjasd\nacc\n+\n123\n@ap2s2_aosdjiasj\nact\n+\n123\n";
+        Box::new(FastqReader::new(sequence))
+    }
+
+    #[test]
+    fn run_fasta() {
+        let reader = fasta_reader();
+        write_to_stdout(reader);
+    }
+
+    #[test]
+    fn run_fastq() {
+        let reader = fastq_reader();
+        write_to_stdout(reader);
+    }
+
+    #[test]
+    #[should_panic]
+    fn run_invalid_fasta() {
+        let reader = invalid_fasta_reader();
+        write_to_stdout(reader)
+    }
+
+    #[test]
+    #[should_panic]
+    fn run_invalid_fastq() {
+        let reader = invalid_fastq_reader();
+        write_to_stdout(reader)
+    }
+    
+}
