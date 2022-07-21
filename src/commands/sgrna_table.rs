@@ -5,7 +5,7 @@ use fxread::{FastxRead, Record};
 
 /// Creates a mapping of gene names to sgRNA names
 struct Table {
-    map: HashMap<String, String>
+    map: HashMap<String, Vec<Record>>
 }
 impl Table {
     
@@ -15,19 +15,66 @@ impl Table {
         let map = Self::build(reader);
         Self { map }
     }
-
-    /// Returns the number of objects mapped
-    pub fn num_records(&self) -> usize 
+    
+    /// Returns the number of genes found
+    pub fn num_genes(&self) -> usize
     {
         self.map.len()
     }
 
+    /// Returns the number of records mapped
+    pub fn num_records(&self) -> usize 
+    {
+        self.map.values().flatten().count()
+    }
+
+    /// Write table to stdout
+    pub fn write_to_stdout(&self, delim: &str, include_sequence: bool) {
+        self.map
+            .iter()
+            .for_each(
+                |(k, v)| 
+                v.iter().for_each(|record| {
+                    println!("{}", self.prepare_result(k, delim, record, include_sequence))
+                })
+            );
+    }
+
+    /// Write table to file
+    pub fn write_to_file(&self, path: &str, delim: &str, include_sequence: bool) -> Result<()> {
+        let mut file = File::create(path)?;
+        self.map
+            .iter()
+            .for_each(
+                |(k, v)| 
+                v.iter().for_each(|record| {
+                    writeln!(file, "{}", self.prepare_result(k, delim, record, include_sequence))
+                        .expect("Writing Error")
+                })
+            );
+        Ok(())
+    }
+
+    /// Properly formats the string for output
+    fn prepare_result(&self, gene: &str, delim: &str, record: &Record, include_sequence: bool) -> String {
+        match include_sequence {
+            true => format!("{}{}{}{}{}", gene, delim, record.id(), delim, record.seq()),
+            false => format!("{}{}{}", gene, delim, record.id())
+        }
+
+    }
+
     /// main build iterator
-    fn build(reader: Box<dyn FastxRead<Item = Record>>) -> HashMap<String, String>
+    fn build(reader: Box<dyn FastxRead<Item = Record>>) -> HashMap<String, Vec<Record>>
     {
         reader
-            .map(|record| (record.id().to_string(), Self::parse_header(&record)))
-            .collect()
+            .fold(
+                HashMap::new(),
+                |mut table, record| {
+                    let gene = Self::parse_header(&record);
+                    table.entry(gene).or_insert(Vec::new()).push(record);
+                    table
+                })
     }
 
     /// parses the gene name from the record header
@@ -35,43 +82,12 @@ impl Table {
     {
         record.id().split('_').next().unwrap().to_string()
     }
-
-    /// exposes a simple iterator function over the internal map
-    fn iter(&self) -> impl Iterator<Item = (&String, &String)>{
-        self.map.iter()
-    }
-}
-
-/// Writes the table to stdout
-fn write_to_stdout(
-        table: Table, 
-        delim: &str)
-{
-    table
-        .iter()
-        .for_each(|(k, v)| println!("{}{}{}", k, delim, v));
-}
-
-/// Writes the table to a file
-fn write_to_file(
-        table: Table, 
-        path: &str, 
-        delim: &str) -> Result<()>
-{
-    let mut file = File::create(path)?;
-    table
-        .iter()
-        .for_each(
-            |(k, v)| 
-            writeln!(file, "{}{}{}", k, delim, v)
-                .expect("Writing Error")
-        );
-    Ok(())
 }
 
 pub fn run(
     input: String,
     output: Option<String>,
+    include_sequence: bool,
     delim: Option<char>) -> Result<()> 
 {
     let delim = match delim {
@@ -79,13 +95,12 @@ pub fn run(
         None => "\t".to_string()
     };
     let reader = fxread::initialize_reader(&input)?;
-
-    let mut spinner = Spinner::new(Spinners::Dots12, "Determining Unique Records".to_string());
+    let mut spinner = Spinner::new(Spinners::Dots12, "Mapping sgRNAs to Parent Genes".to_string());
     let table = Table::from_reader(reader);
-    spinner.stop_and_persist("✔", format!("Mapped {} Records", table.num_records()));
+    spinner.stop_and_persist("✔", format!("Mapped {} sgRNAs to {} Parent Genes", table.num_records(), table.num_genes()));
     match output {
-        Some(f) => write_to_file(table, &f, &delim)?,
-        None => write_to_stdout(table, &delim)
+        Some(f) => table.write_to_file(&f, &delim, include_sequence)?,
+        None => table.write_to_stdout(&delim, include_sequence)
     };
 
     Ok(())
@@ -97,32 +112,28 @@ mod test {
     use super::Table;
 
     fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
-        let sequence: &'static [u8] = b">AP2S1_ASJDAJSDAS\nACT\n>AP2S2_ASDKJASD\nACC\n>AP2S3_AOSDJIASJ\nACT\n";
+        let sequence: &'static [u8] = b">AP2S1_ASJDAJSDAS\nACT\n>AP2S1_ASDKJASD\nACC\n>AP2S2_AOSDJIASJ\nACT\n";
         Box::new(FastaReader::new(sequence))
     }
 
     fn fastq_reader() -> Box<dyn FastxRead<Item = Record>> {
-        let sequence: &'static [u8] = b"@AP2S1_ASJDAJSDAS\nACT\n+\n123\n@AP2S2_ASDKJASD\nACC\n+\n123\n@AP2S3_AOSDJIASJ\nACT\n+\n123\n";
+        let sequence: &'static [u8] = b"@AP2S1_ASJDAJSDAS\nACT\n+\n123\n@AP2S1_ASDKJASD\nACC\n+\n123\n@AP2S2_AOSDJIASJ\nACT\n+\n123\n";
         Box::new(FastqReader::new(sequence))
     }
 
     #[test]
     fn table_fasta() {
         let reader = fasta_reader();
-        let unique = Table::from_reader(reader);
-        assert_eq!(unique.num_records(), 3);
-        assert_eq!(unique.map.get("AP2S1_ASJDAJSDAS"), Some(&"AP2S1".to_string()));
-        assert_eq!(unique.map.get("AP2S2_ASDKJASD"), Some(&"AP2S2".to_string()));
-        assert_eq!(unique.map.get("AP2S3_AOSDJIASJ"), Some(&"AP2S3".to_string()));
+        let table = Table::from_reader(reader);
+        assert_eq!(table.num_records(), 3);
+        assert_eq!(table.num_genes(), 2)
     }
 
     #[test]
     fn table_fastq() {
         let reader = fastq_reader();
-        let unique = Table::from_reader(reader);
-        assert_eq!(unique.num_records(), 3);
-        assert_eq!(unique.map.get("AP2S1_ASJDAJSDAS"), Some(&"AP2S1".to_string()));
-        assert_eq!(unique.map.get("AP2S2_ASDKJASD"), Some(&"AP2S2".to_string()));
-        assert_eq!(unique.map.get("AP2S3_AOSDJIASJ"), Some(&"AP2S3".to_string()));
+        let table = Table::from_reader(reader);
+        assert_eq!(table.num_records(), 3);
+        assert_eq!(table.num_genes(), 2)
     }
 }
