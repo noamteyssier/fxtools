@@ -68,6 +68,17 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>
+    },
+
+    /// Creates the Reverse complement for a provided fastx
+    Reverse {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to Convert to Upper
+        input: String,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>
     }
 }
 
@@ -84,6 +95,9 @@ fn main() -> Result<()> {
         },
         Commands::Upper { input, output } => {
             commands::upper::run(input, output)?;
+        },
+        Commands::Reverse { input, output } => {
+            commands::reverse::run(input, output)?
         }
     };
 
