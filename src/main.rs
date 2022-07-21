@@ -43,6 +43,9 @@ enum Commands {
         /// Filepath to write table to [default: stdout]
         output: Option<String>,
 
+        #[clap(short='s', long, action)]
+        include_sequence: bool,
+
         #[clap(short, long, value_parser)]
         delim: Option<char>,
 
@@ -57,8 +60,8 @@ fn main() -> Result<()> {
         Commands::Unique { input, output, null } => { 
             commands::unique::run(input, output, null)?; 
         },
-        Commands::SgrnaTable { input, output, delim } => {
-            commands::sgrna_table::run(input, output, delim)?;
+        Commands::SgrnaTable { input, output, include_sequence, delim } => {
+            commands::sgrna_table::run(input, output, include_sequence, delim)?;
         }
     };
 
