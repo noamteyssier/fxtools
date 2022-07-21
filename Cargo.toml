@@ -1,11 +1,13 @@
 [package]
 name = "fxtools"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "A collection of commandline Fasta/Fastq utility tools"
 documentation = "https://docs.rs/fxtools"
 repository = "https://github.com/noamteyssier/fxtools"
 license = "MIT"
+keywords = ["cli", "bioinformatics", "sequencing"]
+categories = ["command-line-utilities", "science"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
