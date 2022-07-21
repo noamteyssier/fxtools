@@ -44,9 +44,16 @@ enum Commands {
         output: Option<String>,
 
         #[clap(short='s', long, action)]
+        /// Whether to include the sequence in the output table [default: false]
         include_sequence: bool,
 
         #[clap(short, long, value_parser)]
+        /// Specify ordering of columns as 3 value string ([Hh]eader, [Ss]equence, [Gg]ene).
+        /// [default: ghs]
+        reorder: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Optional choice of output delimiter [default: '\t']
         delim: Option<char>,
 
     }
@@ -60,8 +67,8 @@ fn main() -> Result<()> {
         Commands::Unique { input, output, null } => { 
             commands::unique::run(input, output, null)?; 
         },
-        Commands::SgrnaTable { input, output, include_sequence, delim } => {
-            commands::sgrna_table::run(input, output, include_sequence, delim)?;
+        Commands::SgrnaTable { input, output, include_sequence, delim, reorder } => {
+            commands::sgrna_table::run(input, output, include_sequence, delim, reorder)?;
         }
     };
 
