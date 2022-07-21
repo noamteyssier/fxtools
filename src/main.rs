@@ -56,6 +56,18 @@ enum Commands {
         /// Optional choice of output delimiter [default: '\t']
         delim: Option<char>,
 
+    },
+
+    /// Converts all lowercase nucleotides to uppercase
+    /// and validates for unexpected nucleotides
+    Upper {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to Convert to Upper
+        input: String,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>
     }
 }
 
@@ -69,6 +81,9 @@ fn main() -> Result<()> {
         },
         Commands::SgrnaTable { input, output, include_sequence, delim, reorder } => {
             commands::sgrna_table::run(input, output, include_sequence, delim, reorder)?;
+        },
+        Commands::Upper { input, output } => {
+            commands::upper::run(input, output)?;
         }
     };
 
