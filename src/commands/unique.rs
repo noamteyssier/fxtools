@@ -4,11 +4,12 @@ use std::fs::File;
 use std::io::Write;
 use spinners::{Spinner, Spinners};
 use fxread::{initialize_reader, FastxRead, Record};
+use std::str::from_utf8;
 
 
 struct Unique {
-    map: HashMap<String, Record>,
-    null: HashMap<String, Vec<Record>>
+    map: HashMap<Vec<u8>, Record>,
+    null: HashMap<Vec<u8>, Vec<Record>>
 }
 impl Unique {
     
@@ -51,7 +52,7 @@ impl Unique {
 
     /// Reads in the records and performs the unique matching
     fn build(
-        reader: Box<dyn FastxRead<Item = Record>>) -> (HashMap<String, Record>, HashMap<String, Vec<Record>>) 
+        reader: Box<dyn FastxRead<Item = Record>>) -> (HashMap<Vec<u8>, Record>, HashMap<Vec<u8>, Vec<Record>>) 
     {
         reader
             .fold(
@@ -84,7 +85,7 @@ impl Unique {
     /// checks whether the record's sequence exists in the current
     /// positive set
     fn in_map(
-            map: &mut HashMap<String, Record>, 
+            map: &mut HashMap<Vec<u8>, Record>, 
             record: &Record) -> bool 
     {
         map.contains_key(record.seq())
@@ -93,7 +94,7 @@ impl Unique {
     /// Checks whether the records sequence exists in the current
     /// null set 
     fn in_null(
-            null: &mut HashMap<String, Vec<Record>>, 
+            null: &mut HashMap<Vec<u8>, Vec<Record>>, 
             record: &Record) -> bool 
     {
         null.contains_key(record.seq())
@@ -101,8 +102,8 @@ impl Unique {
 
     /// Inserts a null sequence to the set and removes it from the map
     fn nullify_existing(
-            null: &mut HashMap<String, Vec<Record>>, 
-            map: &mut HashMap<String, Record>,
+            null: &mut HashMap<Vec<u8>, Vec<Record>>, 
+            map: &mut HashMap<Vec<u8>, Record>,
             record: Record) 
     {
         let duplicate = map.remove(record.seq()).expect("unexpected empty value");
@@ -113,21 +114,42 @@ impl Unique {
 
     /// Inserts a sequence to null
     fn insert_to_null(
-            null: &mut HashMap<String, Vec<Record>>,
+            null: &mut HashMap<Vec<u8>, Vec<Record>>,
             record: Record) 
     {
         null
-            .entry(record.seq().to_string())
+            .entry(record.seq().to_owned())
                 .or_insert(Vec::new())
             .push(record);
     }
 
     /// Inserts a sequence to the map
     fn insert_to_map(
-            map: &mut HashMap<String, Record>,
+            map: &mut HashMap<Vec<u8>, Record>,
             record: Record) 
     {
-        map.insert(record.seq().to_string(), record);
+        map.insert(record.seq().to_owned(), record);
+    }
+}
+
+fn format_print(record: &Record) -> String {
+    match record.qual() {
+        Some(_) => {
+            format!(
+                "@{}\n{}\n{}\n{}\n",
+                from_utf8(record.id()).expect("invalid utf8"),
+                from_utf8(record.seq()).expect("invalid utf8"),
+                from_utf8(record.plus().unwrap()).expect("invalid utf8"),
+                from_utf8(record.qual().unwrap()).expect("invalid utf8"),
+                )
+        },
+        None => {
+            format!(
+                ">{}\n{}\n",
+                from_utf8(record.id()).expect("invalid utf8"),
+                from_utf8(record.seq()).expect("invalid utf8")
+                )
+        }
     }
 }
 
@@ -137,7 +159,7 @@ fn write_to_stdout(unique: &Unique)
     unique
         .passing_records()
         .for_each(|x| 
-            print!(">{}\n{}\n", x.id(), x.seq()))
+            print!("{}", format_print(x)));
 }
 
 /// Writes the output fasta
@@ -150,7 +172,7 @@ fn write_output(
         .fold(
             File::create(output).expect("Could not Create Output File"),
             |mut f, x| {
-                write!(f, ">{}\n{}\n", x.id(), x.seq()).expect("Error writing to output");
+                write!(f, "{}", format_print(x)).expect("Error writing to output");
                 f
             });
     Ok(())
@@ -166,7 +188,7 @@ fn write_null(
         .fold(
             File::create(output).expect("Could not Create Null File"),
             |mut f, x| {
-                write!(f, ">{}\n{}\n", x.id(), x.seq()).expect("Error writing to null");
+                write!(f, "{}", format_print(x)).expect("Error writing to null");
                 f
             });
     Ok(())
