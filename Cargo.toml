@@ -14,5 +14,5 @@ categories = ["command-line-utilities", "science"]
 [dependencies]
 fxread = "0.2"
 clap = { version = "3", features = ["derive"] }
-spinners = { git = "https://github.com/noamteyssier/spinners", branch = "convert_stdout_to_stderr"}
 anyhow = "1"
+spinners = "4.1.0"
