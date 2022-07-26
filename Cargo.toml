@@ -12,7 +12,7 @@ categories = ["command-line-utilities", "science"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fxread = "0.1"
+fxread = "0.2"
 clap = { version = "3", features = ["derive"] }
 spinners = { git = "https://github.com/noamteyssier/spinners", branch = "convert_stdout_to_stderr"}
 anyhow = "1"
