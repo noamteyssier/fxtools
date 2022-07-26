@@ -1,8 +1,30 @@
 use std::fs::File;
 use std::io::Write;
+use std::str::from_utf8;
 
 use anyhow::Result;
 use fxread::{initialize_reader, FastxRead, Record};
+
+fn format_print(record: Record) -> String {
+    match record.qual() {
+        Some(_) => {
+            format!(
+                "@{}\n{}\n{}\n{}\n",
+                from_utf8(record.id()).expect("invalid utf8"),
+                from_utf8(&record.seq_upper()).expect("invalid utf8"),
+                from_utf8(record.plus().unwrap()).expect("invalid utf8"),
+                from_utf8(record.qual().unwrap()).expect("invalid utf8"),
+                )
+        },
+        None => {
+            format!(
+                ">{}\n{}\n",
+                from_utf8(record.id()).expect("invalid utf8"),
+                from_utf8(&record.seq_upper()).expect("invalid utf8")
+                )
+        }
+    }
+}
 
 /// Writes results to stdout
 fn write_to_stdout(reader: Box<dyn FastxRead<Item = Record>>) {
@@ -13,7 +35,7 @@ fn write_to_stdout(reader: Box<dyn FastxRead<Item = Record>>) {
                 false => panic!("Invalid Nucleotides in record: {:?}", x)
             })
         .for_each(|x| {
-            print!(">{}\n{}\n", x.id(), x.seq_upper())
+            print!("{}", format_print(x))
         })
 }
 
@@ -27,7 +49,7 @@ fn write_to_file(output: &str, reader: Box<dyn FastxRead<Item = Record>>) -> Res
                 false => panic!("Invalid Nucleotides in record: {:?}", x)
             })
         .for_each(|x| {
-            write!(file, ">{}\n{}\n", x.id(), x.seq_upper()).expect("Error Writing to File")
+            write!(file, "{}", format_print(x)).expect("Error Writing to File")
         });
     Ok(())
 }
