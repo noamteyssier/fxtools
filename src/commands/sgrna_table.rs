@@ -6,7 +6,7 @@ use fxread::{FastxRead, Record};
 
 /// Creates a mapping of gene names to sgRNA names
 struct Table {
-    map: HashMap<String, Vec<Record>>
+    map: HashMap<Vec<u8>, Vec<Record>>
 }
 impl Table {
     
@@ -32,7 +32,7 @@ impl Table {
     /// Write table to stdout
     pub fn write_to_stdout(
             &self, 
-            delim: &str, 
+            delim: &u8, 
             include_sequence: bool,
             order: &str) 
     {
@@ -41,7 +41,7 @@ impl Table {
             .for_each(
                 |(k, v)| 
                 v.iter().for_each(|record| {
-                    println!("{}", self.prepare_result(k, delim, record, include_sequence, order))
+                    println!("{}", std::str::from_utf8(&self.prepare_result(k, delim, record, include_sequence, order)).unwrap())
                 })
             );
     }
@@ -50,7 +50,7 @@ impl Table {
     pub fn write_to_file(
             &self, 
             path: &str, 
-            delim: &str, 
+            delim: &u8, 
             include_sequence: bool, 
             order: &str) -> Result<()> 
     {
@@ -60,7 +60,7 @@ impl Table {
             .for_each(
                 |(k, v)| 
                 v.iter().for_each(|record| {
-                    writeln!(file, "{}", self.prepare_result(k, delim, record, include_sequence, order))
+                    writeln!(file, "{}", std::str::from_utf8(&self.prepare_result(k, delim, record, include_sequence, order)).unwrap())
                         .expect("Writing Error")
                 })
             );
@@ -71,9 +71,9 @@ impl Table {
     fn map_token<'a>(
             &self, 
             c: &char, 
-            gene: &'a str, 
+            gene: &'a [u8], 
             record: &'a Record, 
-            include_sequence: bool) -> Option<&'a str> 
+            include_sequence: bool) -> Option<&'a[u8]> 
     {
         match c {
             'g'|'G' => Some(gene),
@@ -89,43 +89,43 @@ impl Table {
     /// Builds the string for the row and handles delimiter addition
     fn build_row(
             &self, 
-            row: &mut String, 
+            row: &mut Vec<u8>, 
             idx: usize, 
-            token: Option<&str>,
-            delim: &str) -> String 
+            token: Option<&[u8]>,
+            delim: &u8) -> Vec<u8>
     {
         match token {
             Some(t) => match idx {
-                0 => row.push_str(t),
-                _ => { row.push_str(delim); row.push_str(t); }
+                0 => row.extend_from_slice(t),
+                _ => { row.push(*delim); row.extend_from_slice(t); }
             },
             None => {}
         };
-        row.to_string()
+        row.to_owned()
     }
 
 
     /// Properly formats the string for output
     fn prepare_result(
             &self, 
-            gene: &str, 
-            delim: &str, 
+            gene: &[u8], 
+            delim: &u8, 
             record: &Record, 
             include_sequence: bool,
-            order: &str) -> String 
+            order: &str) -> Vec<u8> 
     {
         order
             .chars()
             .map(|c| self.map_token(&c, gene, record, include_sequence))
             .enumerate()
             .fold(
-                String::new(),
+                Vec::new(),
                 |mut row, (idx, token)| 
                 self.build_row(&mut row, idx, token, delim))
     }
 
     /// main build iterator
-    fn build(reader: Box<dyn FastxRead<Item = Record>>) -> HashMap<String, Vec<Record>>
+    fn build(reader: Box<dyn FastxRead<Item = Record>>) -> HashMap<Vec<u8>, Vec<Record>>
     {
         reader
             .fold(
@@ -138,9 +138,12 @@ impl Table {
     }
 
     /// parses the gene name from the record header
-    fn parse_header(record: &Record) -> String 
+    fn parse_header(record: &Record) -> Vec<u8> 
     {
-        record.id().split('_').next().unwrap().to_string()
+        match record.id().split(|b| *b == b'_').next() {
+            Some(split) => split.to_owned(),
+            None => record.id().to_owned()
+        }
     }
 }
 
@@ -174,8 +177,8 @@ pub fn run(
     reorder: Option<String>) -> Result<()> 
 {
     let delim = match delim {
-        Some(c) => c.to_string(),
-        None => "\t".to_string()
+        Some(c) => c as u8,
+        None => b'\t'
     };
 
     let order = match reorder {
