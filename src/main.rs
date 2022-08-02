@@ -88,7 +88,11 @@ enum Commands {
 
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
-        output: Option<String>
+        output: Option<String>,
+
+        #[clap(short, long, value_parser, default_value="5000")]
+        /// Number of samples to calculate positional entropy on
+        num_samples: usize
     }
 }
 
@@ -109,8 +113,8 @@ fn main() -> Result<()> {
         Commands::Reverse { input, output } => {
             commands::reverse::run(input, output)?;
         },
-        Commands::ExtractVariable { input, output } => {
-            commands::extract::run(input, output)?;
+        Commands::ExtractVariable { input, output, num_samples } => {
+            commands::extract::run(input, output, num_samples)?;
         }
     };
 
