@@ -81,6 +81,8 @@ enum Commands {
         output: Option<String>
     },
 
+    /// Filters same length sequences to their variable region. Useful in CRISPRi/a libraries where
+    /// the variable region is prefixed and suffixed by some constant region
     ExtractVariable {
         #[clap(short, long, value_parser)]
         /// Input FASTA/Q to to extract variable region
