@@ -79,6 +79,16 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>
+    },
+
+    ExtractVariable {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to to extract variable region
+        input: String,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>
     }
 }
 
@@ -97,7 +107,10 @@ fn main() -> Result<()> {
             commands::upper::run(input, output)?;
         },
         Commands::Reverse { input, output } => {
-            commands::reverse::run(input, output)?
+            commands::reverse::run(input, output)?;
+        },
+        Commands::ExtractVariable { input, output } => {
+            commands::extract::run(input, output)?;
         }
     };
 
