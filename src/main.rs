@@ -92,7 +92,11 @@ enum Commands {
 
         #[clap(short, long, value_parser, default_value="5000")]
         /// Number of samples to calculate positional entropy on
-        num_samples: usize
+        num_samples: usize,
+
+        #[clap(short, long, value_parser, default_value="1.0")]
+        /// Number of samples to calculate positional entropy on
+        zscore_threshold: f64
     }
 }
 
@@ -113,8 +117,8 @@ fn main() -> Result<()> {
         Commands::Reverse { input, output } => {
             commands::reverse::run(input, output)?;
         },
-        Commands::ExtractVariable { input, output, num_samples } => {
-            commands::extract::run(input, output, num_samples)?;
+        Commands::ExtractVariable { input, output, num_samples, zscore_threshold } => {
+            commands::extract::run(input, output, num_samples, zscore_threshold)?;
         }
     };
 
