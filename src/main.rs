@@ -79,6 +79,26 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>
+    },
+
+    /// Filters same length sequences to their variable region. Useful in CRISPRi/a libraries where
+    /// the variable region is prefixed and suffixed by some constant region
+    ExtractVariable {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to to extract variable region
+        input: String,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>,
+
+        #[clap(short, long, value_parser, default_value="5000")]
+        /// Number of samples to calculate positional entropy on
+        num_samples: usize,
+
+        #[clap(short, long, value_parser, default_value="1.0")]
+        /// Number of samples to calculate positional entropy on
+        zscore_threshold: f64
     }
 }
 
@@ -97,7 +117,10 @@ fn main() -> Result<()> {
             commands::upper::run(input, output)?;
         },
         Commands::Reverse { input, output } => {
-            commands::reverse::run(input, output)?
+            commands::reverse::run(input, output)?;
+        },
+        Commands::ExtractVariable { input, output, num_samples, zscore_threshold } => {
+            commands::extract::run(input, output, num_samples, zscore_threshold)?;
         }
     };
 
