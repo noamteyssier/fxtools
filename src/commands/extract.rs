@@ -4,6 +4,7 @@ use anyhow::Result;
 use fxread::{initialize_reader, FastxRead, Record};
 use ndarray::{Axis, Array2, Array1};
 use ndarray_stats::{EntropyExt, QuantileExt};
+use spinners::{Spinner, Spinners};
 use std::str::from_utf8;
 
 /// Retrieves the sequence size of the first item in the reader
@@ -175,10 +176,20 @@ pub fn run(
 {
     // Calculate Positional Entropy && Select High Entropy Positions
     let mut reader = initialize_reader(&input)?;
+
+    let mut spinner = Spinner::new(Spinners::Dots12, format!("Calculating Entropy on {} Records", num_samples));
     let positional_entropy = calculate_positional_entropy(&mut reader, num_samples);
     let high_entropy_positions = select_high_entropy_positions(&positional_entropy, zscore_threshold);
     assert!(is_contiguous(&high_entropy_positions), "High Entropy Positions must be contiguous -- try raising the zscore threshold");
     let (pos_min, pos_max) = border(&high_entropy_positions)?;
+    spinner.stop_with_message(
+        format!(
+            "✔ Average Entropy: {:.3}\n✔ Minimum Entropy: {:.3}\n✔ Maximum Entropy: {:.3}\n✔ Bounds found: [{}, {}]",
+            positional_entropy.mean().unwrap(),
+            positional_entropy.min().unwrap(),
+            positional_entropy.max().unwrap(),
+            pos_min,
+            pos_max));
 
     // Reinitialize reader and write to output
     let reader = initialize_reader(&input)?;
