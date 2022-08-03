@@ -186,3 +186,100 @@ pub fn run(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod testing {
+    use fxread::{FastxRead, FastaReader, Record};
+    use ndarray::array;
+    use ndarray_stats::EntropyExt;
+
+    use crate::commands::extract::{normalize_counts, calculate_positional_entropy, select_high_entropy_positions};
+
+    use super::{base_map, border, is_contiguous, position_counts};
+
+    #[test]
+    fn test_base_map() {
+        let bytes = b"ACGTN";
+        assert_eq!(base_map(&bytes[0]), Some(0));
+        assert_eq!(base_map(&bytes[1]), Some(1));
+        assert_eq!(base_map(&bytes[2]), Some(2));
+        assert_eq!(base_map(&bytes[3]), Some(3));
+        assert_eq!(base_map(&bytes[4]), None);
+    }
+
+    #[test]
+    fn test_border() {
+        let array = array![1,2,3,4];
+        assert_eq!(border(&array).unwrap(), (1, 4));
+    }
+
+    #[test]
+    fn test_contiguous() {
+        let array = array![1,2,3,4];
+        assert!(is_contiguous(&array));
+
+        let array = array![1,4,3,2];
+        assert!(!is_contiguous(&array));
+    }
+
+    #[test]
+    fn test_position_counts() {
+        let fasta: &'static [u8] = b">seq.0\nACGT\n>seq.1\nACGT\n>seq.2\nACGT\n";
+        let mut reader: Box<dyn FastxRead<Item = Record>> = Box::new(FastaReader::new(fasta));
+        let posmat = position_counts(&mut reader, 3);
+
+        // position 0; A
+        assert_eq!(posmat[[0, 0]], 2.);
+
+        // position 0; C
+        assert_eq!(posmat[[0, 1]], 0.);
+
+        // position 4; T
+        assert_eq!(posmat[[3, 3]], 2.);
+    }
+
+    #[test]
+    fn test_position_frequency() {
+        let fasta: &'static [u8] = b">seq.0\nACGT\n>seq.1\nACGT\n>seq.2\nACGT\n";
+        let mut reader: Box<dyn FastxRead<Item = Record>> = Box::new(FastaReader::new(fasta));
+        let posmat = position_counts(&mut reader, 3);
+        let pos_prob = normalize_counts(posmat);
+
+        // position 0; A
+        assert_eq!(pos_prob[[0, 0]], 1.);
+
+        // position 0; C
+        assert_eq!(pos_prob[[0, 1]], 0.);
+
+        // position 4; T
+        assert_eq!(pos_prob[[3, 3]], 1.);
+    }
+
+    #[test]
+    fn test_positional_entropy_none() {
+        let fasta: &'static [u8] = b">seq.0\nACGT\n>seq.1\nACGT\n>seq.2\nACGT\n";
+        let mut reader: Box<dyn FastxRead<Item = Record>> = Box::new(FastaReader::new(fasta));
+        let entropy = calculate_positional_entropy(&mut reader, 3);
+        assert!(entropy.iter().all(|x| *x == 0.));
+    }
+
+    #[test]
+    fn test_positional_entropy_high() {
+        let fasta: &'static [u8] = b">seq.0\nACGT\n>seq.1\nTCGA\n>seq.2\nGATC\n";
+        let mut reader: Box<dyn FastxRead<Item = Record>> = Box::new(FastaReader::new(fasta));
+        let entropy = calculate_positional_entropy(&mut reader, 3);
+        let value = array![0.5, 0.5].entropy().unwrap();
+        assert!(entropy.iter().all(|x| *x == value));
+    }
+
+    #[test]
+    fn test_high_entropy_positions() {
+        let fasta: &'static [u8] = b">seq.0\nACGT\n>seq.1\nACGT\n>seq.2\nAGCT\n";
+        let mut reader: Box<dyn FastxRead<Item = Record>> = Box::new(FastaReader::new(fasta));
+        let entropy = calculate_positional_entropy(&mut reader, 3);
+        let positions = select_high_entropy_positions(&entropy, 0.5);
+        assert_eq!(positions.len(), 2);
+        assert_eq!(positions[0], 1);
+        assert_eq!(positions[1], 2);
+    }
+}
