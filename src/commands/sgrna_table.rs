@@ -1,5 +1,5 @@
 use anyhow::Result;
-use spinners::{Spinner, Spinners};
+use spinoff::{Spinner, Spinners, Color, Streams};
 use std::{collections::HashMap, fs::File, io::Write};
 use fxread::{FastxRead, Record};
 
@@ -189,9 +189,15 @@ pub fn run(
     validate_order(&order);
 
     let reader = fxread::initialize_reader(&input)?;
-    let mut spinner = Spinner::new(Spinners::Dots12, "Mapping sgRNAs to Parent Genes".to_string());
+    let spinner = Spinner::new_with_stream(
+        Spinners::Dots12, 
+        "Mapping sgRNAs to Parent Genes".to_string(),
+        Color::Green,
+        Streams::Stderr);
     let table = Table::from_reader(reader);
-    spinner.stop_and_persist("✔", format!("Mapped {} sgRNAs to {} Parent Genes", table.num_records(), table.num_genes()));
+    spinner.stop_and_persist(
+        "✔", 
+        &format!("Mapped {} sgRNAs to {} Parent Genes", table.num_records(), table.num_genes()));
     match output {
         Some(f) => table.write_to_file(&f, &delim, include_sequence, &order)?,
         None => table.write_to_stdout(&delim, include_sequence, &order)

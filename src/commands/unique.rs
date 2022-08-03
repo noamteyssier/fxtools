@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use anyhow::Result;
 use std::fs::File;
 use std::io::Write;
-use spinners::{Spinner, Spinners};
+use spinoff::{Spinner, Spinners, Color, Streams};
 use fxread::{initialize_reader, FastxRead, Record};
 use std::str::from_utf8;
 
@@ -201,11 +201,15 @@ pub fn run(
 {
     let reader = initialize_reader(&path)?;
 
-    let mut spinner = Spinner::new(Spinners::Dots12, "Determining Unique Records".to_string());
+    let spinner = Spinner::new_with_stream(
+        Spinners::Dots12, 
+        "Determining Unique Records".to_string(),
+        Color::Green,
+        Streams::Stderr);
     let unique = Unique::from_reader(reader);
     spinner.stop_and_persist(
         "✔", 
-        format!(
+        &format!(
             "Found {} unique records, {} duplicate sequences with {} records affected", 
             unique.num_passing(), 
             unique.num_null_sequences(), 
