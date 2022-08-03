@@ -1,17 +1,22 @@
 use std::{fs::File, io::{stdout, Write}};
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 use fxread::{initialize_reader, FastxRead, Record};
-use ndarray::{Axis, Array2, Array1};
+use ndarray::{Axis, Array2, Array1, s};
 use ndarray_stats::{EntropyExt, QuantileExt};
 use spinoff::{Spinner, Spinners, Color, Streams};
 use std::str::from_utf8;
 
 /// Retrieves the sequence size of the first item in the reader
 fn get_sequence_size(
-    reader: &mut Box<dyn FastxRead<Item = Record>>) -> usize
+    reader: &mut Box<dyn FastxRead<Item = Record>>) -> Result<usize>
 {
-    reader.next().expect("empty reader").seq().len()
+    if let Some(record) = reader.next() {
+        Ok(record.seq().len())
+    }
+    else {
+        bail!("Provided Reader is Empty")
+    }
 }
 
 /// Assigns the provided byte to a nucleotide index
@@ -56,7 +61,7 @@ fn position_counts(
     reader: &mut Box<dyn FastxRead<Item = Record>>,
     num_samples: usize) -> Array2<f64>
 {
-    let size = get_sequence_size(reader);
+    let size = get_sequence_size(reader).unwrap();
     reader
         .take(num_samples)
         .fold(
@@ -100,6 +105,25 @@ fn select_high_entropy_positions(
         .collect()
 }
 
+fn find_longest_contiguous(
+    array: &Array1<usize>) -> Array1<usize>
+{
+    let (min, max) = array
+        .iter()
+        .enumerate()
+        .fold(
+            (0, 0), |(mut min, mut max), (idx, x)| {
+                if idx == 0 { return (0, 0) }
+                if *x == array[idx-1] + 1 {
+                    max = idx
+                } else {
+                    min = idx
+                }
+                (min, max)
+            });
+    array.slice(s![min..=max]).to_owned()
+}
+
 /// Checks if the provided array of integers is contiguous
 fn is_contiguous(
     array: &Array1<usize>) -> bool
@@ -118,6 +142,7 @@ fn is_contiguous(
 /// Utility function to retrieve the minimum and maximum of a provided integer array
 fn border(array: &Array1<usize>) -> Result<(usize, usize)>
 {
+    if array.is_empty() { bail!("No entropies pass z-score threshold! Try lowering the threshold.") }
     Ok((*array.min()?, *array.max()?))
 }
 
@@ -184,8 +209,15 @@ pub fn run(
     let mut reader = initialize_reader(&input)?;
     let positional_entropy = calculate_positional_entropy(&mut reader, num_samples);
     let high_entropy_positions = select_high_entropy_positions(&positional_entropy, zscore_threshold);
-    assert!(is_contiguous(&high_entropy_positions), "High Entropy Positions must be contiguous -- try raising the zscore threshold");
-    let (pos_min, pos_max) = border(&high_entropy_positions)?;
+    let contiguous_positions = match is_contiguous(&high_entropy_positions) { 
+        true => high_entropy_positions ,
+        false => {
+            let contiguous = find_longest_contiguous(&high_entropy_positions);
+            if contiguous.is_empty() { bail!("Cannot find a contiguous variable region!") }
+            contiguous
+        }
+    };
+    let (pos_min, pos_max) = border(&contiguous_positions)?;
 
     spinner.stop_with_message(
         &format!(
@@ -211,7 +243,7 @@ mod testing {
 
     use crate::commands::extract::{normalize_counts, calculate_positional_entropy, select_high_entropy_positions};
 
-    use super::{base_map, border, is_contiguous, position_counts};
+    use super::{base_map, border, is_contiguous, position_counts, find_longest_contiguous};
 
     #[test]
     fn test_base_map() {
@@ -297,5 +329,12 @@ mod testing {
         assert_eq!(positions.len(), 2);
         assert_eq!(positions[0], 1);
         assert_eq!(positions[1], 2);
+    }
+
+    #[test]
+    fn test_longest_contiguous() {
+        let array = array![1,3,4,5,6];
+        let cont = find_longest_contiguous(&array);
+        assert_eq!(cont, array![3,4,5,6]);
     }
 }
