@@ -1,10 +1,9 @@
-use std::{fs::File, io::stdout};
-use std::io::Write;
 use std::str::from_utf8;
-
 use anyhow::Result;
-use fxread::{initialize_reader, FastxRead, Record};
+use fxread::{initialize_reader, Record};
+use super::{match_output_stream, write_output};
 
+/// Reverse complement sequence and create a string representation of the record
 fn format_print(record: &Record) -> String {
     match record.qual() {
         Some(_) => {
@@ -26,42 +25,21 @@ fn format_print(record: &Record) -> String {
     }
 }
 
-/// Matches the output to a write stream
-fn match_output(output: Option<String>) -> Result<Box<dyn Write>>
-{
-    match output {
-        Some(path) => Ok(Box::new(File::create(path)?)),
-        None => Ok(Box::new(stdout()))
-    }
-}
-
-/// Writes results to file
-fn write_output(writer: &mut Box<dyn Write>, reader: Box<dyn FastxRead<Item = Record>>) {
-    reader
-        .map(|x| 
-            if x.valid() { x } else { 
-                panic!("Invalid Nucleotides in record: {:?}", from_utf8(x.id()).expect("invalid utf8")) 
-            })
-        .for_each(|x| {
-            write!(writer, "{}", format_print(&x)).expect("Error Writing to File");
-        });
-}
-
 /// Runs reverse
 pub fn run(
     input: &str,
-    output: Option<String>) -> Result<()> {
-
+    output: Option<String>) -> Result<()> 
+{
     let reader = initialize_reader(input)?;
-    let mut writer = match_output(output)?;
-    write_output(&mut writer, reader);
+    let mut writer = match_output_stream(output)?;
+    write_output(&mut writer, reader, &format_print);
     Ok(())
 }
 
 #[cfg(test)]
 mod test {
     use fxread::{FastxRead, Record, FastaReader, FastqReader};
-    use super::{write_output, match_output, format_print};
+    use super::{write_output, match_output_stream, format_print};
 
     fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
         let sequence: &'static [u8] = b">ap2s1_asjdajsdas\nact\n>ap2s1_asdkjasd\nacc\n>ap2s2_aosdjiasj\nact\n";
@@ -102,16 +80,16 @@ mod test {
     #[should_panic]
     fn run_invalid_fasta() {
         let reader = invalid_fasta_reader();
-        let mut writer = match_output(None).unwrap();
-        write_output(&mut writer, reader)
+        let mut writer = match_output_stream(None).unwrap();
+        write_output(&mut writer, reader, &format_print)
     }
 
     #[test]
     #[should_panic]
     fn run_invalid_fastq() {
         let reader = invalid_fastq_reader();
-        let mut writer = match_output(None).unwrap();
-        write_output(&mut writer, reader)
+        let mut writer = match_output_stream(None).unwrap();
+        write_output(&mut writer, reader, &format_print)
     }
     
 }
