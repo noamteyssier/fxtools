@@ -20,7 +20,7 @@ fn get_sequence_size(
 }
 
 /// Assigns the provided byte to a nucleotide index
-fn base_map(byte: &u8) -> Option<usize> {
+fn base_map(byte: u8) -> Option<usize> {
     match byte {
         b'A' => Some(0),
         b'C' => Some(1),
@@ -68,7 +68,7 @@ fn position_counts(
             Array2::zeros((size, 4)),
             |mut posmat, record| {
                 record.seq().iter().enumerate()
-                    .map(|(idx, byte)| (idx, base_map(byte)))
+                    .map(|(idx, byte)| (idx, base_map(*byte)))
                     .for_each(|(idx, jdx)| increment_positional_matrix(&mut posmat, idx, jdx));
                 posmat
             })
@@ -115,9 +115,9 @@ fn find_longest_contiguous(
             (0, 0), |(mut min, mut max), (idx, x)| {
                 if idx == 0 { return (0, 0) }
                 if *x == array[idx-1] + 1 {
-                    max = idx
+                    max = idx;
                 } else {
-                    min = idx
+                    min = idx;
                 }
                 (min, max)
             });
@@ -170,7 +170,7 @@ fn assign_output(output: Option<String>) -> Result<Box<dyn Write>>
 
 /// Writes the record as either fasta or fastq and applies the record sequence trimming to the
 /// variable region
-fn format_print(record: Record, pos_min: usize, pos_max: usize) -> String {
+fn format_print(record: &Record, pos_min: usize, pos_max: usize) -> String {
     match record.qual() {
         Some(_) => {
             format!(
@@ -200,14 +200,14 @@ fn write_to_output(
 {
     let mut writer = assign_output(output)?;
     reader
-        .map(|record| format_print(record, pos_min, pos_max))
+        .map(|record| format_print(&record, pos_min, pos_max))
         .for_each(|x| write!(writer, "{}", x).expect("Error writing to file"));
     Ok(())
 }
 
 /// Runs the variable region extraction
 pub fn run(
-    input: String, 
+    input: &str, 
     output: Option<String>, 
     num_samples: usize,
     zscore_threshold: f64) -> Result<()>
@@ -219,7 +219,7 @@ pub fn run(
         Streams::Stderr);
 
     // Calculate Positional Entropy && Select High Entropy Positions
-    let mut reader = initialize_reader(&input)?;
+    let mut reader = initialize_reader(input)?;
     let positional_entropy = calculate_positional_entropy(&mut reader, num_samples);
     let high_entropy_positions = select_high_entropy_positions(&positional_entropy, zscore_threshold);
     let contiguous_positions = assign_contiguous(high_entropy_positions)?;
@@ -235,7 +235,7 @@ pub fn run(
             pos_max));
 
     // Reinitialize reader and write to output
-    let reader = initialize_reader(&input)?;
+    let reader = initialize_reader(input)?;
     write_to_output(reader, output, pos_min, pos_max)?;
 
     Ok(())
@@ -254,11 +254,11 @@ mod testing {
     #[test]
     fn test_base_map() {
         let bytes = b"ACGTN";
-        assert_eq!(base_map(&bytes[0]), Some(0));
-        assert_eq!(base_map(&bytes[1]), Some(1));
-        assert_eq!(base_map(&bytes[2]), Some(2));
-        assert_eq!(base_map(&bytes[3]), Some(3));
-        assert_eq!(base_map(&bytes[4]), None);
+        assert_eq!(base_map(bytes[0]), Some(0));
+        assert_eq!(base_map(bytes[1]), Some(1));
+        assert_eq!(base_map(bytes[2]), Some(2));
+        assert_eq!(base_map(bytes[3]), Some(3));
+        assert_eq!(base_map(bytes[4]), None);
     }
 
     #[test]
