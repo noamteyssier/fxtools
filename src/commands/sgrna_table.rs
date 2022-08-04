@@ -41,7 +41,7 @@ impl Table {
             .for_each(
                 |(k, v)| 
                 v.iter().for_each(|record| {
-                    println!("{}", std::str::from_utf8(&self.prepare_result(k, delim, record, include_sequence, order)).unwrap())
+                    println!("{}", std::str::from_utf8(&Self::prepare_result(k, delim, record, include_sequence, order)).unwrap())
                 })
             );
     }
@@ -60,7 +60,7 @@ impl Table {
             .for_each(
                 |(k, v)| 
                 v.iter().for_each(|record| {
-                    writeln!(file, "{}", std::str::from_utf8(&self.prepare_result(k, delim, record, include_sequence, order)).unwrap())
+                    writeln!(file, "{}", std::str::from_utf8(&Self::prepare_result(k, delim, record, include_sequence, order)).unwrap())
                         .expect("Writing Error")
                 })
             );
@@ -69,7 +69,6 @@ impl Table {
 
     /// Maps an ordering character to its respective string token
     fn map_token<'a>(
-            &self, 
             c: &char, 
             gene: &'a [u8], 
             record: &'a Record, 
@@ -88,7 +87,6 @@ impl Table {
 
     /// Builds the string for the row and handles delimiter addition
     fn build_row(
-            &self, 
             row: &mut Vec<u8>, 
             idx: usize, 
             token: Option<&[u8]>,
@@ -104,7 +102,6 @@ impl Table {
 
     /// Properly formats the string for output
     fn prepare_result(
-            &self, 
             gene: &[u8], 
             delim: u8, 
             record: &Record, 
@@ -113,12 +110,12 @@ impl Table {
     {
         order
             .chars()
-            .map(|c| self.map_token(&c, gene, record, include_sequence))
+            .map(|c| Self::map_token(&c, gene, record, include_sequence))
             .enumerate()
             .fold(
                 Vec::new(),
                 |mut row, (idx, token)| 
-                self.build_row(&mut row, idx, token, delim))
+                Self::build_row(&mut row, idx, token, delim))
     }
 
     /// main build iterator
