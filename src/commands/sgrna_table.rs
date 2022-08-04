@@ -156,14 +156,8 @@ fn validate_characters(order: &str) -> bool
 /// Validates that the order string is within the expected bounds and contains 
 /// expected characters
 fn validate_order(order: &str) {
-    match validate_characters(order) {
-            true => {},
-            false => panic!("Unrecognized characters in reorder: {}", order)
-    };
-    match order.len() <= 3 {
-        true => {},
-        false => panic!("Ordering length must be less than 3: {}", order)
-    }
+    assert!(validate_characters(order), "Unrecognized characters in reorder: {}", order);
+    assert!(order.len() <= 3, "Ordering lengh must be less than 3: {}", order);
 }
 
 pub fn run(
