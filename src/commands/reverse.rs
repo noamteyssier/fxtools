@@ -1,11 +1,11 @@
-use std::fs::File;
+use std::{fs::File, io::stdout};
 use std::io::Write;
 use std::str::from_utf8;
 
 use anyhow::Result;
 use fxread::{initialize_reader, FastxRead, Record};
 
-fn format_print(record: Record) -> String {
+fn format_print(record: &Record) -> String {
     match record.qual() {
         Some(_) => {
             format!(
@@ -26,32 +26,25 @@ fn format_print(record: Record) -> String {
     }
 }
 
-/// Writes results to stdout
-fn write_to_stdout(reader: Box<dyn FastxRead<Item = Record>>) {
-    reader
-        .map(|x| 
-            match x.valid() {
-                true => { x }
-                false => panic!("Invalid Nucleotides in record: {:?}", x)
-            })
-        .for_each(|x| {
-            print!("{}", format_print(x))
-        })
+/// Matches the output to a write stream
+fn match_output(output: Option<String>) -> Result<Box<dyn Write>>
+{
+    match output {
+        Some(path) => Ok(Box::new(File::create(path)?)),
+        None => Ok(Box::new(stdout()))
+    }
 }
 
 /// Writes results to file
-fn write_to_file(output: &str, reader: Box<dyn FastxRead<Item = Record>>) -> Result<()> {
-    let mut file = File::create(output)?;
+fn write_output(writer: &mut Box<dyn Write>, reader: Box<dyn FastxRead<Item = Record>>) {
     reader
         .map(|x| 
-            match x.valid() {
-                true => { x }
-                false => panic!("Invalid Nucleotides in record: {:?}", x)
+            if x.valid() { x } else { 
+                panic!("Invalid Nucleotides in record: {:?}", std::str::from_utf8(x.id()).expect("invalid utf8")) 
             })
         .for_each(|x| {
-            write!(file, "{}", format_print(x)).expect("Error Writing to File")
+            write!(writer, "{}", format_print(&x)).expect("Error Writing to File");
         });
-    Ok(())
 }
 
 /// Runs reverse
@@ -60,17 +53,15 @@ pub fn run(
     output: Option<String>) -> Result<()> {
 
     let reader = initialize_reader(input)?;
-    match output {
-        Some(s) => write_to_file(&s, reader)?,
-        None => write_to_stdout(reader)
-    };
+    let mut writer = match_output(output)?;
+    write_output(&mut writer, reader);
     Ok(())
 }
 
 #[cfg(test)]
 mod test {
     use fxread::{FastxRead, Record, FastaReader, FastqReader};
-    use super::write_to_stdout;
+    use super::{write_output, match_output, format_print};
 
     fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
         let sequence: &'static [u8] = b">ap2s1_asjdajsdas\nact\n>ap2s1_asdkjasd\nacc\n>ap2s2_aosdjiasj\nact\n";
@@ -95,28 +86,32 @@ mod test {
 
     #[test]
     fn run_fasta() {
-        let reader = fasta_reader();
-        write_to_stdout(reader);
+        let mut reader = fasta_reader();
+        let rev = reader.next().map(|x| format_print(&x));
+        assert_eq!(rev, Some(">ap2s1_asjdajsdas\nagt\n".to_string()));
     }
 
     #[test]
     fn run_fastq() {
-        let reader = fastq_reader();
-        write_to_stdout(reader);
+        let mut reader = fastq_reader();
+        let rev = reader.next().map(|x| format_print(&x));
+        assert_eq!(rev, Some("@ap2s1_asjdajsdas\nagt\n+\n123\n".to_string()));
     }
 
     #[test]
     #[should_panic]
     fn run_invalid_fasta() {
         let reader = invalid_fasta_reader();
-        write_to_stdout(reader)
+        let mut writer = match_output(None).unwrap();
+        write_output(&mut writer, reader)
     }
 
     #[test]
     #[should_panic]
     fn run_invalid_fastq() {
         let reader = invalid_fastq_reader();
-        write_to_stdout(reader)
+        let mut writer = match_output(None).unwrap();
+        write_output(&mut writer, reader)
     }
     
 }
