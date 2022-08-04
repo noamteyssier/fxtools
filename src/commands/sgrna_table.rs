@@ -77,10 +77,7 @@ impl Table {
         match c {
             'g'|'G' => Some(gene),
             'h'|'H' => Some(record.id()),
-            's'|'S' => match include_sequence {
-                true => Some(record.seq()),
-                false => None
-            },
+            's'|'S' => if include_sequence { Some(record.seq()) } else { None }
             _ => panic!("Unexpected character in GSH token: {}", c)
         }
     }
