@@ -1,6 +1,6 @@
 use anyhow::Result;
 use spinoff::{Spinner, Spinners, Color, Streams};
-use std::{collections::HashMap, fs::File, io::Write};
+use std::{collections::HashMap, fs::File, io::{Write, stdout}, str::from_utf8};
 use fxread::{FastxRead, Record};
 
 
@@ -29,47 +29,37 @@ impl Table {
         self.map.values().flatten().count()
     }
 
-    /// Write table to stdout
-    pub fn write_to_stdout(
-            &self, 
-            delim: u8, 
-            include_sequence: bool,
-            order: &str) 
+    /// Matches the output stream from output
+    pub fn match_stream(output: Option<String>) -> Result<Box<dyn Write>>
     {
-        self.map
-            .iter()
-            .for_each(
-                |(k, v)| 
-                v.iter().for_each(|record| {
-                    println!("{}", std::str::from_utf8(&Self::prepare_result(k, delim, record, include_sequence, order)).unwrap())
-                })
-            );
+        match output {
+            Some(path) => Ok(Box::new(File::create(path)?)),
+            None => Ok(Box::new(stdout()))
+        }
     }
 
-    /// Write table to file
-    pub fn write_to_file(
+    /// Write table to output stream
+    pub fn write_result(
             &self, 
-            path: &str, 
+            writer: &mut Box<dyn Write>,
             delim: u8, 
             include_sequence: bool, 
-            order: &str) -> Result<()> 
+            order: &str)
     {
-        let mut file = File::create(path)?;
         self.map
             .iter()
             .for_each(
                 |(k, v)| 
                 v.iter().for_each(|record| {
-                    writeln!(file, "{}", std::str::from_utf8(&Self::prepare_result(k, delim, record, include_sequence, order)).unwrap())
-                        .expect("Writing Error")
+                    writeln!(writer, "{}", from_utf8(&Self::prepare_result(k, delim, record, include_sequence, order)).unwrap())
+                        .expect("Writing Error");
                 })
             );
-        Ok(())
     }
 
     /// Maps an ordering character to its respective string token
     fn map_token<'a>(
-            c: &char, 
+            c: char, 
             gene: &'a [u8], 
             record: &'a Record, 
             include_sequence: bool) -> Option<&'a[u8]> 
@@ -107,7 +97,7 @@ impl Table {
     {
         order
             .chars()
-            .map(|c| Self::map_token(&c, gene, record, include_sequence))
+            .map(|c| Self::map_token(c, gene, record, include_sequence))
             .enumerate()
             .fold(
                 Vec::new(),
@@ -183,10 +173,8 @@ pub fn run(
     spinner.stop_and_persist(
         "✔", 
         &format!("Mapped {} sgRNAs to {} Parent Genes", table.num_records(), table.num_genes()));
-    match output {
-        Some(f) => table.write_to_file(&f, delim, include_sequence, &order)?,
-        None => table.write_to_stdout(delim, include_sequence, &order)
-    };
+    let mut writer = Table::match_stream(output)?;
+    table.write_result(&mut writer, delim, include_sequence, &order);
 
     Ok(())
 }
