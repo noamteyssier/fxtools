@@ -1,11 +1,10 @@
-use std::{fs::File, io::{stdout, Write}};
-
+use std::{io::Write, str::from_utf8};
 use anyhow::{Result, bail};
 use fxread::{initialize_reader, FastxRead, Record};
 use ndarray::{Axis, Array2, Array1, s};
 use ndarray_stats::{EntropyExt, QuantileExt};
 use spinoff::{Spinner, Spinners, Color, Streams};
-use std::str::from_utf8;
+use super::match_output_stream;
 
 /// Retrieves the sequence size of the first item in the reader
 fn get_sequence_size(
@@ -159,15 +158,6 @@ fn border(array: &Array1<usize>) -> Result<(usize, usize)>
     Ok((*array.min()?, *array.max()?))
 }
 
-/// Determines the output stream
-fn assign_output(output: Option<String>) -> Result<Box<dyn Write>>
-{
-    match output {
-        Some(s) => Ok(Box::new(File::create(s)?)),
-        None => Ok(Box::new(stdout()))
-    }
-}
-
 /// Writes the record as either fasta or fastq and applies the record sequence trimming to the
 /// variable region
 fn format_print(record: &Record, pos_min: usize, pos_max: usize) -> String {
@@ -192,17 +182,18 @@ fn format_print(record: &Record, pos_min: usize, pos_max: usize) -> String {
 }
 
 /// Writes results to output stream
-fn write_to_output(
-    reader: Box<dyn FastxRead<Item = Record>>, 
-    output: Option<String>, 
+fn write_to_output<W, I>(
+    writer: &mut W,
+    reader: I, 
     pos_min: usize, 
-    pos_max: usize) -> Result<()>
+    pos_max: usize)
+where
+    W: Write,
+    I: Iterator<Item = Record>
 {
-    let mut writer = assign_output(output)?;
     reader
         .map(|record| format_print(&record, pos_min, pos_max))
         .for_each(|x| write!(writer, "{}", x).expect("Error writing to file"));
-    Ok(())
 }
 
 /// Runs the variable region extraction
@@ -236,8 +227,8 @@ pub fn run(
 
     // Reinitialize reader and write to output
     let reader = initialize_reader(input)?;
-    write_to_output(reader, output, pos_min, pos_max)?;
-
+    let mut writer = match_output_stream(output)?;
+    write_to_output(&mut writer, reader, pos_min, pos_max);
     Ok(())
 }
 
