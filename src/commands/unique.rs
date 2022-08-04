@@ -61,25 +61,24 @@ impl Unique {
                 (HashMap::new(), HashMap::new()),
                 |(mut map, mut null), x| {
 
+                    // nullify record with duplicate sequence
+                    if Self::in_null(&mut null, &x) {
+                        Self::insert_to_null(&mut null, x);
+                    }
+
                     // continues if not already nulled
-                    if !Self::in_null(&mut null, &x) {
+                    else {
 
                         // nullify if in map already
                         if Self::in_map(&mut map, &x) {
-                            Self::nullify_existing(&mut null, &mut map, x)
+                            Self::nullify_existing(&mut null, &mut map, x);
                         }
 
                         // insert to map
                         else {
-                            Self::insert_to_map(&mut map, x)
+                            Self::insert_to_map(&mut map, x);
                         }
                     }
-
-                    // nullify record with duplicate sequence
-                    else {
-                        Self::insert_to_null(&mut null, x)
-                    }
-
                     (map, null)
                 })
     }
@@ -110,7 +109,7 @@ impl Unique {
     {
         let duplicate = map.remove(record.seq()).expect("unexpected empty value");
         Self::insert_to_null(null, duplicate);
-        Self::insert_to_null(null, record)
+        Self::insert_to_null(null, record);
 
     }
 
@@ -167,7 +166,7 @@ fn write_to_stdout(unique: &Unique)
 /// Writes the output fasta
 fn write_output(
         output: &str, 
-        unique: &Unique) -> Result<()>
+        unique: &Unique)
 {
     unique
         .passing_records()
@@ -177,13 +176,12 @@ fn write_output(
                 write!(f, "{}", format_print(x)).expect("Error writing to output");
                 f
             });
-    Ok(())
 }
 
 /// Writes the null fasta
 fn write_null(
         output: &str, 
-        unique: &Unique) -> Result<()>
+        unique: &Unique)
 {
     unique
         .null_records()
@@ -193,7 +191,6 @@ fn write_null(
                 write!(f, "{}", format_print(x)).expect("Error writing to null");
                 f
             });
-    Ok(())
 }
 
 pub fn run(
@@ -218,11 +215,11 @@ pub fn run(
             unique.num_null_records()));
     
     match output {
-        Some(file_handle) => write_output(&file_handle, &unique)?,
+        Some(file_handle) => write_output(&file_handle, &unique),
         None => write_to_stdout(&unique)
     };
     
-    if let Some(file_handle) = null { write_null(&file_handle, &unique)? }
+    if let Some(file_handle) = null { write_null(&file_handle, &unique) }
     
     Ok(())
 }
