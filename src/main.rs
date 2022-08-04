@@ -108,19 +108,19 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Unique { input, output, null } => { 
-            commands::unique::run(input, output, null)?; 
+            commands::unique::run(&input, output, null)?; 
         },
         Commands::SgrnaTable { input, output, include_sequence, delim, reorder } => {
-            commands::sgrna_table::run(input, output, include_sequence, delim, reorder)?;
+            commands::sgrna_table::run(&input, output, include_sequence, delim, reorder)?;
         },
         Commands::Upper { input, output } => {
-            commands::upper::run(input, output)?;
+            commands::upper::run(&input, output)?;
         },
         Commands::Reverse { input, output } => {
-            commands::reverse::run(input, output)?;
+            commands::reverse::run(&input, output)?;
         },
         Commands::ExtractVariable { input, output, num_samples, zscore_threshold } => {
-            commands::extract::run(input, output, num_samples, zscore_threshold)?;
+            commands::extract::run(&input, output, num_samples, zscore_threshold)?;
         }
     };
 

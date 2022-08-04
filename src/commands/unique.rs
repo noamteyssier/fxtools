@@ -197,11 +197,11 @@ fn write_null(
 }
 
 pub fn run(
-        path: String, 
+        path: &str, 
         output: Option<String>, 
         null: Option<String>) -> Result<()> 
 {
-    let reader = initialize_reader(&path)?;
+    let reader = initialize_reader(path)?;
 
     let spinner = Spinner::new_with_stream(
         Spinners::Dots12, 

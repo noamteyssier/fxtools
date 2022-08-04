@@ -167,7 +167,7 @@ fn validate_order(order: &str) {
 }
 
 pub fn run(
-    input: String,
+    input: &str,
     output: Option<String>,
     include_sequence: bool,
     delim: Option<char>,
@@ -185,7 +185,7 @@ pub fn run(
     
     validate_order(&order);
 
-    let reader = fxread::initialize_reader(&input)?;
+    let reader = fxread::initialize_reader(input)?;
     let spinner = Spinner::new_with_stream(
         Spinners::Dots12, 
         "Mapping sgRNAs to Parent Genes".to_string(),

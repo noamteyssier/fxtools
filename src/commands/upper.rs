@@ -56,10 +56,10 @@ fn write_to_file(output: &str, reader: Box<dyn FastxRead<Item = Record>>) -> Res
 
 /// Runs uppercase
 pub fn run(
-    input: String,
+    input: &str,
     output: Option<String>) -> Result<()> {
 
-    let reader = initialize_reader(&input)?;
+    let reader = initialize_reader(input)?;
     match output {
         Some(s) => write_to_file(&s, reader)?,
         None => write_to_stdout(reader)
