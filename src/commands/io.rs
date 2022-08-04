@@ -1,7 +1,8 @@
+use std::borrow::Borrow;
 use std::{fs::File, io::stdout, str::from_utf8};
 use std::io::Write;
 use anyhow::Result;
-use fxread::{FastxRead, Record};
+use fxread::Record;
 
 /// Matches the output to a writer stream
 pub fn match_output_stream(output: Option<String>) -> Result<Box<dyn Write>>
@@ -13,17 +14,22 @@ pub fn match_output_stream(output: Option<String>) -> Result<Box<dyn Write>>
 }
 
 /// Writes to the output stream with a provided closure
-pub fn write_output(
-    writer: &mut Box<dyn Write>, 
-    reader: Box<dyn FastxRead<Item = Record>>,
+pub fn write_output<W, I, R> (
+    writer: &mut W, 
+    reader: I,
     f: &dyn Fn(&Record) -> String)
+where
+    W: Write,
+    I: Iterator<Item = R>,
+    R: Borrow<Record>
 {
     reader
-        .map(|x| 
-            if x.valid() { x } else { 
-                panic!("Invalid Nucleotides in record: {:?}", from_utf8(x.id()).expect("invalid utf8")) 
-            })
         .for_each(|x| {
-            write!(writer, "{}", f(&x)).expect("Error Writing to File");
+            assert!(
+                x.borrow().valid(), 
+                "Invalid Nucleotides in record: {}", 
+                from_utf8(x.borrow().id()).expect("invalid utf8"));
+            write!(writer, "{}", f(x.borrow()))
+                .expect("Error Writing to File");
         });
 }
