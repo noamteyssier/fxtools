@@ -33,18 +33,18 @@ fn base_map(byte: u8) -> Option<usize> {
 /// Increments the positional array for the provided indices
 fn increment_positional_matrix(
     posmat: &mut Array2<f64>, 
-    idx: usize, 
-    jdx: Option<usize>)
+    pos_idx: usize, 
+    nuc_idx: Option<usize>)
 {
-    if let Some(j) = jdx {
+    if let Some(j) = nuc_idx {
         // increment the nucleotide index and at the position
-        posmat[[idx, j]] += 1.;
+        posmat[[pos_idx, j]] += 1.;
     } else {
         // increment each nucleotide index if an `N` is found (as it could be anything)
-        posmat[[idx, 0]] += 1.;
-        posmat[[idx, 1]] += 1.;
-        posmat[[idx, 2]] += 1.;
-        posmat[[idx, 3]] += 1.;
+        posmat[[pos_idx, 0]] += 1.;
+        posmat[[pos_idx, 1]] += 1.;
+        posmat[[pos_idx, 2]] += 1.;
+        posmat[[pos_idx, 3]] += 1.;
     };
 }
 
