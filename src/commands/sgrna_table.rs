@@ -32,7 +32,7 @@ impl Table {
     /// Write table to stdout
     pub fn write_to_stdout(
             &self, 
-            delim: &u8, 
+            delim: u8, 
             include_sequence: bool,
             order: &str) 
     {
@@ -50,7 +50,7 @@ impl Table {
     pub fn write_to_file(
             &self, 
             path: &str, 
-            delim: &u8, 
+            delim: u8, 
             include_sequence: bool, 
             order: &str) -> Result<()> 
     {
@@ -92,11 +92,11 @@ impl Table {
             row: &mut Vec<u8>, 
             idx: usize, 
             token: Option<&[u8]>,
-            delim: &u8) -> Vec<u8>
+            delim: u8) -> Vec<u8>
     {
         if let Some(t) = token {match idx {
             0 => row.extend_from_slice(t),
-            _ => { row.push(*delim); row.extend_from_slice(t); }
+            _ => { row.push(delim); row.extend_from_slice(t); }
         }} 
         row.clone()
     }
@@ -106,7 +106,7 @@ impl Table {
     fn prepare_result(
             &self, 
             gene: &[u8], 
-            delim: &u8, 
+            delim: u8, 
             record: &Record, 
             include_sequence: bool,
             order: &str) -> Vec<u8> 
@@ -190,8 +190,8 @@ pub fn run(
         "✔", 
         &format!("Mapped {} sgRNAs to {} Parent Genes", table.num_records(), table.num_genes()));
     match output {
-        Some(f) => table.write_to_file(&f, &delim, include_sequence, &order)?,
-        None => table.write_to_stdout(&delim, include_sequence, &order)
+        Some(f) => table.write_to_file(&f, delim, include_sequence, &order)?,
+        None => table.write_to_stdout(delim, include_sequence, &order)
     };
 
     Ok(())
