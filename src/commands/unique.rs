@@ -220,10 +220,7 @@ pub fn run(
         None => write_to_stdout(&unique)
     };
     
-    match null {
-        Some(file_handle) => write_null(&file_handle, &unique)?,
-        None => {}
-    };
+    if let Some(file_handle) = null { write_null(&file_handle, &unique)? }
     
     Ok(())
 }
