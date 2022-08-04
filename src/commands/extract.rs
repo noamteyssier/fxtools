@@ -155,7 +155,9 @@ fn assign_contiguous(array: Array1<usize>) -> Result<Array1<usize>>
 fn border(array: &Array1<usize>) -> Result<(usize, usize)>
 {
     if array.is_empty() { bail!("No entropies pass z-score threshold! Try lowering the threshold.") }
-    Ok((*array.min()?, *array.max()?))
+    let (min, max) = (*array.min()?, *array.max()?);
+    if min == max { bail!("No entropies pass z-score threshold!") }
+    Ok((min, max))
 }
 
 /// Writes the record as either fasta or fastq and applies the record sequence trimming to the
