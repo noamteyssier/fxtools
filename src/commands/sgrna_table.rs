@@ -147,26 +147,26 @@ impl Table {
     }
 }
 
+/// Validate that all characters in the order string are expected and known
+fn validate_characters(order: &str) -> bool
+{
+     order
+        .chars()
+        .map(|c| matches!( c, 'G'|'S'|'H'|'g'|'s'|'h') )
+        .all(|c| c) 
+}
+
 /// Validates that the order string is within the expected bounds and contains 
 /// expected characters
 fn validate_order(order: &str) {
-    match order
-        .chars()
-        .map(|c| match c {
-            'G'|'S'|'H'|'g'|'s'|'h' => true,
-            _ => false
-        })
-        .all(|c| c) 
-        {
+    match validate_characters(order) {
             true => {},
             false => panic!("Unrecognized characters in reorder: {}", order)
-        };
+    };
     match order.len() <= 3 {
         true => {},
         false => panic!("Ordering length must be less than 3: {}", order)
     }
-
-    
 }
 
 pub fn run(
