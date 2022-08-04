@@ -40,7 +40,7 @@ fn write_output(writer: &mut Box<dyn Write>, reader: Box<dyn FastxRead<Item = Re
     reader
         .map(|x| 
             if x.valid() { x } else { 
-                panic!("Invalid Nucleotides in record: {:?}", std::str::from_utf8(x.id()).expect("invalid utf8")) 
+                panic!("Invalid Nucleotides in record: {:?}", from_utf8(x.id()).expect("invalid utf8")) 
             })
         .for_each(|x| {
             write!(writer, "{}", format_print(&x)).expect("Error Writing to File");
