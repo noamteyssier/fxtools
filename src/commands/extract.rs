@@ -139,6 +139,19 @@ fn is_contiguous(
         })
 }
 
+/// Determines if high entropy positions are contiguous and attempts to calculate
+/// the longest contiguous position if not
+fn assign_contiguous(array: Array1<usize>) -> Result<Array1<usize>>
+{
+    if is_contiguous(&array) { 
+        Ok(array)
+    } else {
+        let contiguous = find_longest_contiguous(&array);
+        if contiguous.is_empty() { bail!("Cannot find a contiguous variable region!") }
+        Ok(contiguous)
+    }
+}
+
 /// Utility function to retrieve the minimum and maximum of a provided integer array
 fn border(array: &Array1<usize>) -> Result<(usize, usize)>
 {
@@ -209,14 +222,7 @@ pub fn run(
     let mut reader = initialize_reader(&input)?;
     let positional_entropy = calculate_positional_entropy(&mut reader, num_samples);
     let high_entropy_positions = select_high_entropy_positions(&positional_entropy, zscore_threshold);
-    let contiguous_positions = match is_contiguous(&high_entropy_positions) { 
-        true => high_entropy_positions ,
-        false => {
-            let contiguous = find_longest_contiguous(&high_entropy_positions);
-            if contiguous.is_empty() { bail!("Cannot find a contiguous variable region!") }
-            contiguous
-        }
-    };
+    let contiguous_positions = assign_contiguous(high_entropy_positions)?;
     let (pos_min, pos_max) = border(&contiguous_positions)?;
 
     spinner.stop_with_message(
