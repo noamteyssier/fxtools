@@ -1,15 +1,17 @@
 use std::collections::HashMap;
 use anyhow::Result;
-use std::fs::File;
-use std::io::Write;
 use spinoff::{Spinner, Spinners, Color, Streams};
 use fxread::{initialize_reader, FastxRead, Record};
 use std::str::from_utf8;
 
+use super::{match_output_stream, write_output};
+
+type UniqMap = HashMap<Vec<u8>, Record>;
+type NullMap = HashMap<Vec<u8>, Vec<Record>>;
 
 struct Unique {
-    map: HashMap<Vec<u8>, Record>,
-    null: HashMap<Vec<u8>, Vec<Record>>
+    map: UniqMap,
+    null: NullMap
 }
 impl Unique {
     
@@ -52,32 +54,31 @@ impl Unique {
 
     /// Reads in the records and performs the unique matching
     fn build(
-        reader: Box<dyn FastxRead<Item = Record>>) -> (HashMap<Vec<u8>, Record>, HashMap<Vec<u8>, Vec<Record>>) 
+        reader: Box<dyn FastxRead<Item = Record>>) -> (UniqMap, NullMap) 
     {
         reader
             .fold(
                 (HashMap::new(), HashMap::new()),
                 |(mut map, mut null), x| {
 
+                    // nullify record with duplicate sequence
+                    if Self::in_null(&mut null, &x) {
+                        Self::insert_to_null(&mut null, x);
+                    }
+
                     // continues if not already nulled
-                    if !Self::in_null(&mut null, &x) {
+                    else {
 
                         // nullify if in map already
                         if Self::in_map(&mut map, &x) {
-                            Self::nullify_existing(&mut null, &mut map, x)
+                            Self::nullify_existing(&mut null, &mut map, x);
                         }
 
                         // insert to map
                         else {
-                            Self::insert_to_map(&mut map, x)
+                            Self::insert_to_map(&mut map, x);
                         }
                     }
-
-                    // nullify record with duplicate sequence
-                    else {
-                        Self::insert_to_null(&mut null, x)
-                    }
-
                     (map, null)
                 })
     }
@@ -85,7 +86,7 @@ impl Unique {
     /// checks whether the record's sequence exists in the current
     /// positive set
     fn in_map(
-            map: &mut HashMap<Vec<u8>, Record>, 
+            map: &mut UniqMap, 
             record: &Record) -> bool 
     {
         map.contains_key(record.seq())
@@ -94,7 +95,7 @@ impl Unique {
     /// Checks whether the records sequence exists in the current
     /// null set 
     fn in_null(
-            null: &mut HashMap<Vec<u8>, Vec<Record>>, 
+            null: &mut NullMap, 
             record: &Record) -> bool 
     {
         null.contains_key(record.seq())
@@ -102,19 +103,19 @@ impl Unique {
 
     /// Inserts a null sequence to the set and removes it from the map
     fn nullify_existing(
-            null: &mut HashMap<Vec<u8>, Vec<Record>>, 
-            map: &mut HashMap<Vec<u8>, Record>,
+            null: &mut NullMap, 
+            map: &mut UniqMap,
             record: Record) 
     {
         let duplicate = map.remove(record.seq()).expect("unexpected empty value");
         Self::insert_to_null(null, duplicate);
-        Self::insert_to_null(null, record)
+        Self::insert_to_null(null, record);
 
     }
 
     /// Inserts a sequence to null
     fn insert_to_null(
-            null: &mut HashMap<Vec<u8>, Vec<Record>>,
+            null: &mut NullMap,
             record: Record) 
     {
         null
@@ -125,13 +126,14 @@ impl Unique {
 
     /// Inserts a sequence to the map
     fn insert_to_map(
-            map: &mut HashMap<Vec<u8>, Record>,
+            map: &mut UniqMap,
             record: Record) 
     {
         map.insert(record.seq().to_owned(), record);
     }
 }
 
+/// Format Prints the record for standard fasta/fastq output
 fn format_print(record: &Record) -> String {
     match record.qual() {
         Some(_) => {
@@ -153,53 +155,12 @@ fn format_print(record: &Record) -> String {
     }
 }
 
-/// Writes the output fasta to stdout
-fn write_to_stdout(unique: &Unique)
-{
-    unique
-        .passing_records()
-        .for_each(|x| 
-            print!("{}", format_print(x)));
-}
-
-/// Writes the output fasta
-fn write_output(
-        output: &str, 
-        unique: &Unique) -> Result<()>
-{
-    unique
-        .passing_records()
-        .fold(
-            File::create(output).expect("Could not Create Output File"),
-            |mut f, x| {
-                write!(f, "{}", format_print(x)).expect("Error writing to output");
-                f
-            });
-    Ok(())
-}
-
-/// Writes the null fasta
-fn write_null(
-        output: &str, 
-        unique: &Unique) -> Result<()>
-{
-    unique
-        .null_records()
-        .fold(
-            File::create(output).expect("Could not Create Null File"),
-            |mut f, x| {
-                write!(f, "{}", format_print(x)).expect("Error writing to null");
-                f
-            });
-    Ok(())
-}
-
 pub fn run(
-        path: String, 
+        path: &str, 
         output: Option<String>, 
         null: Option<String>) -> Result<()> 
 {
-    let reader = initialize_reader(&path)?;
+    let reader = initialize_reader(path)?;
 
     let spinner = Spinner::new_with_stream(
         Spinners::Dots12, 
@@ -215,16 +176,21 @@ pub fn run(
             unique.num_null_sequences(), 
             unique.num_null_records()));
     
-    match output {
-        Some(file_handle) => write_output(&file_handle, &unique)?,
-        None => write_to_stdout(&unique)
-    };
-    
-    match null {
-        Some(file_handle) => write_null(&file_handle, &unique)?,
-        None => {}
-    };
-    
+    // write unique sequences
+    let mut unique_writer = match_output_stream(output)?;
+    write_output(
+        &mut unique_writer, 
+        Box::new(unique.passing_records()), 
+        &format_print);
+
+    // write null sequences if required
+    if null.is_some() {
+        let mut null_writer = match_output_stream(null)?;
+        write_output(
+            &mut null_writer, 
+            Box::new(unique.null_records()), 
+            &format_print);
+    }
     Ok(())
 }
 

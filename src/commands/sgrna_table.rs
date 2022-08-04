@@ -1,10 +1,10 @@
 use anyhow::Result;
 use spinoff::{Spinner, Spinners, Color, Streams};
-use std::{collections::HashMap, fs::File, io::Write};
+use std::{collections::HashMap, fs::File, io::{Write, stdout}, str::from_utf8};
 use fxread::{FastxRead, Record};
 
 
-/// Creates a mapping of gene names to sgRNA names
+/// Creates a mapping of gene names to `sgRNA` names
 struct Table {
     map: HashMap<Vec<u8>, Vec<Record>>
 }
@@ -29,48 +29,37 @@ impl Table {
         self.map.values().flatten().count()
     }
 
-    /// Write table to stdout
-    pub fn write_to_stdout(
-            &self, 
-            delim: &u8, 
-            include_sequence: bool,
-            order: &str) 
+    /// Matches the output stream from output
+    pub fn match_stream(output: Option<String>) -> Result<Box<dyn Write>>
     {
-        self.map
-            .iter()
-            .for_each(
-                |(k, v)| 
-                v.iter().for_each(|record| {
-                    println!("{}", std::str::from_utf8(&self.prepare_result(k, delim, record, include_sequence, order)).unwrap())
-                })
-            );
+        match output {
+            Some(path) => Ok(Box::new(File::create(path)?)),
+            None => Ok(Box::new(stdout()))
+        }
     }
 
-    /// Write table to file
-    pub fn write_to_file(
+    /// Write table to output stream
+    pub fn write_result(
             &self, 
-            path: &str, 
-            delim: &u8, 
+            writer: &mut Box<dyn Write>,
+            delim: u8, 
             include_sequence: bool, 
-            order: &str) -> Result<()> 
+            order: &str)
     {
-        let mut file = File::create(path)?;
         self.map
             .iter()
             .for_each(
                 |(k, v)| 
                 v.iter().for_each(|record| {
-                    writeln!(file, "{}", std::str::from_utf8(&self.prepare_result(k, delim, record, include_sequence, order)).unwrap())
-                        .expect("Writing Error")
+                    writeln!(writer, "{}", from_utf8(&Self::prepare_result(k, delim, record, include_sequence, order)).unwrap())
+                        .expect("Writing Error");
                 })
             );
-        Ok(())
     }
 
     /// Maps an ordering character to its respective string token
     fn map_token<'a>(
-            &self, 
-            c: &char, 
+            c: char, 
             gene: &'a [u8], 
             record: &'a Record, 
             include_sequence: bool) -> Option<&'a[u8]> 
@@ -78,50 +67,42 @@ impl Table {
         match c {
             'g'|'G' => Some(gene),
             'h'|'H' => Some(record.id()),
-            's'|'S' => match include_sequence {
-                true => Some(record.seq()),
-                false => None
-            },
+            's'|'S' => if include_sequence { Some(record.seq()) } else { None }
             _ => panic!("Unexpected character in GSH token: {}", c)
         }
     }
 
     /// Builds the string for the row and handles delimiter addition
     fn build_row(
-            &self, 
             row: &mut Vec<u8>, 
             idx: usize, 
             token: Option<&[u8]>,
-            delim: &u8) -> Vec<u8>
+            delim: u8) -> Vec<u8>
     {
-        match token {
-            Some(t) => match idx {
-                0 => row.extend_from_slice(t),
-                _ => { row.push(*delim); row.extend_from_slice(t); }
-            },
-            None => {}
-        };
-        row.to_owned()
+        if let Some(t) = token {
+            if idx > 0 { row.push(delim); }
+            row.extend_from_slice(t);
+        }
+        row.clone()
     }
 
 
     /// Properly formats the string for output
     fn prepare_result(
-            &self, 
             gene: &[u8], 
-            delim: &u8, 
+            delim: u8, 
             record: &Record, 
             include_sequence: bool,
             order: &str) -> Vec<u8> 
     {
         order
             .chars()
-            .map(|c| self.map_token(&c, gene, record, include_sequence))
+            .map(|c| Self::map_token(c, gene, record, include_sequence))
             .enumerate()
             .fold(
                 Vec::new(),
                 |mut row, (idx, token)| 
-                self.build_row(&mut row, idx, token, delim))
+                Self::build_row(&mut row, idx, token, delim))
     }
 
     /// main build iterator
@@ -147,30 +128,24 @@ impl Table {
     }
 }
 
+/// Validate that all characters in the order string are expected and known
+fn validate_characters(order: &str) -> bool
+{
+     order
+        .chars()
+        .map(|c| matches!( c, 'G'|'S'|'H'|'g'|'s'|'h') )
+        .all(|c| c) 
+}
+
 /// Validates that the order string is within the expected bounds and contains 
 /// expected characters
 fn validate_order(order: &str) {
-    match order
-        .chars()
-        .map(|c| match c {
-            'G'|'S'|'H'|'g'|'s'|'h' => true,
-            _ => false
-        })
-        .all(|c| c) 
-        {
-            true => {},
-            false => panic!("Unrecognized characters in reorder: {}", order)
-        };
-    match order.len() <= 3 {
-        true => {},
-        false => panic!("Ordering length must be less than 3: {}", order)
-    }
-
-    
+    assert!(validate_characters(order), "Unrecognized characters in reorder: {}", order);
+    assert!(order.len() <= 3, "Ordering lengh must be less than 3: {}", order);
 }
 
 pub fn run(
-    input: String,
+    input: &str,
     output: Option<String>,
     include_sequence: bool,
     delim: Option<char>,
@@ -188,7 +163,7 @@ pub fn run(
     
     validate_order(&order);
 
-    let reader = fxread::initialize_reader(&input)?;
+    let reader = fxread::initialize_reader(input)?;
     let spinner = Spinner::new_with_stream(
         Spinners::Dots12, 
         "Mapping sgRNAs to Parent Genes".to_string(),
@@ -198,10 +173,8 @@ pub fn run(
     spinner.stop_and_persist(
         "✔", 
         &format!("Mapped {} sgRNAs to {} Parent Genes", table.num_records(), table.num_genes()));
-    match output {
-        Some(f) => table.write_to_file(&f, &delim, include_sequence, &order)?,
-        None => table.write_to_stdout(&delim, include_sequence, &order)
-    };
+    let mut writer = Table::match_stream(output)?;
+    table.write_result(&mut writer, delim, include_sequence, &order);
 
     Ok(())
 }
