@@ -4,7 +4,7 @@ use std::{collections::HashMap, fs::File, io::Write};
 use fxread::{FastxRead, Record};
 
 
-/// Creates a mapping of gene names to sgRNA names
+/// Creates a mapping of gene names to `sgRNA` names
 struct Table {
     map: HashMap<Vec<u8>, Vec<Record>>
 }
@@ -98,7 +98,7 @@ impl Table {
             0 => row.extend_from_slice(t),
             _ => { row.push(*delim); row.extend_from_slice(t); }
         }} 
-        row.to_owned()
+        row.clone()
     }
 
 
