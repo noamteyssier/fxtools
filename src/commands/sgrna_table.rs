@@ -94,10 +94,10 @@ impl Table {
             token: Option<&[u8]>,
             delim: u8) -> Vec<u8>
     {
-        if let Some(t) = token {match idx {
-            0 => row.extend_from_slice(t),
-            _ => { row.push(delim); row.extend_from_slice(t); }
-        }} 
+        if let Some(t) = token {
+            if idx > 0 { row.push(delim); }
+            row.extend_from_slice(t);
+        }
         row.clone()
     }
 
