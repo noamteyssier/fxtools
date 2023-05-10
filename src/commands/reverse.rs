@@ -1,7 +1,7 @@
-use std::str::from_utf8;
+use super::{match_output_stream, write_output};
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
-use super::{match_output_stream, write_output};
+use std::str::from_utf8;
 
 /// Reverse complement sequence and create a string representation of the record
 fn format_print(record: &Record) -> String {
@@ -13,23 +13,20 @@ fn format_print(record: &Record) -> String {
                 from_utf8(&record.seq_rev_comp()).expect("invalid utf8"),
                 from_utf8(record.plus().unwrap()).expect("invalid utf8"),
                 from_utf8(record.qual().unwrap()).expect("invalid utf8"),
-                )
-        },
+            )
+        }
         None => {
             format!(
                 ">{}\n{}\n",
                 from_utf8(record.id()).expect("invalid utf8"),
                 from_utf8(&record.seq_rev_comp()).expect("invalid utf8")
-                )
+            )
         }
     }
 }
 
 /// Runs reverse
-pub fn run(
-    input: &str,
-    output: Option<String>) -> Result<()> 
-{
+pub fn run(input: &str, output: Option<String>) -> Result<()> {
     let reader = initialize_reader(input)?;
     let mut writer = match_output_stream(output)?;
     write_output(&mut writer, reader, &format_print);
@@ -38,19 +35,20 @@ pub fn run(
 
 #[cfg(test)]
 mod test {
-    use fxread::{FastxRead, Record, FastaReader, FastqReader};
-    use super::{write_output, match_output_stream, format_print};
+    use super::{format_print, match_output_stream, write_output};
+    use fxread::{FastaReader, FastqReader, FastxRead, Record};
 
     fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
-        let sequence: &'static [u8] = b">ap2s1_asjdajsdas\nact\n>ap2s1_asdkjasd\nacc\n>ap2s2_aosdjiasj\nact\n";
+        let sequence: &'static [u8] =
+            b">ap2s1_asjdajsdas\nact\n>ap2s1_asdkjasd\nacc\n>ap2s2_aosdjiasj\nact\n";
         Box::new(FastaReader::new(sequence))
     }
 
     fn invalid_fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
-        let sequence: &'static [u8] = b">ap2s1_asjdajsdas\nbrb\n>ap2s1_asdkjasd\nacc\n>ap2s2_aosdjiasj\nact\n";
+        let sequence: &'static [u8] =
+            b">ap2s1_asjdajsdas\nbrb\n>ap2s1_asdkjasd\nacc\n>ap2s2_aosdjiasj\nact\n";
         Box::new(FastaReader::new(sequence))
     }
-    
 
     fn fastq_reader() -> Box<dyn FastxRead<Item = Record>> {
         let sequence: &'static [u8] = b"@ap2s1_asjdajsdas\nact\n+\n123\n@ap2s1_asdkjasd\nacc\n+\n123\n@ap2s2_aosdjiasj\nact\n+\n123\n";
@@ -91,5 +89,4 @@ mod test {
         let mut writer = match_output_stream(None).unwrap();
         write_output(&mut writer, reader, &format_print)
     }
-    
 }

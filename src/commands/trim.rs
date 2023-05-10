@@ -1,9 +1,9 @@
-use std::{str::from_utf8, io::Write, borrow::Borrow};
+use std::{borrow::Borrow, io::Write, str::from_utf8};
 
 use anyhow::Result;
-use fxread::{Record, initialize_reader};
+use fxread::{initialize_reader, Record};
 use memchr::memmem;
-use spinoff::{Spinner, Spinners, Color, Streams};
+use spinoff::{Color, Spinner, Spinners, Streams};
 
 use super::match_output_stream;
 
@@ -28,7 +28,7 @@ impl Trimmer {
         if let Some(idx) = memmem::find(record.seq(), self.adapter.as_bytes()) {
             self.num_trimmed += 1;
             Some(self.prepare_record(record, idx))
-        } else{
+        } else {
             None
         }
     }
@@ -41,13 +41,13 @@ impl Trimmer {
                 from_utf8(self.trim_sequence(record, index)).expect("invalid utf8"),
                 from_utf8(record.plus().unwrap()).expect("invalid utf8"),
                 from_utf8(self.trim_qual(record, index)).expect("invalid utf8"),
-                )
+            )
         } else {
             format!(
                 ">{}\n{}\n",
                 from_utf8(record.id()).expect("invalid utf8"),
                 from_utf8(self.trim_sequence(record, index)).expect("invalid utf8"),
-                )
+            )
         }
     }
 
@@ -61,56 +61,55 @@ impl Trimmer {
 
     fn trim_qual<'a>(&self, record: &'a Record, index: usize) -> &'a [u8] {
         if self.trim_adapter {
-            &record.qual().expect("Missing Quality - called from trim_qual")[index+self.adapter.len()..]
+            &record
+                .qual()
+                .expect("Missing Quality - called from trim_qual")[index + self.adapter.len()..]
         } else {
-            &record.qual().expect("Missing Quality - called from trim_qual")[index..]
+            &record
+                .qual()
+                .expect("Missing Quality - called from trim_qual")[index..]
         }
     }
 }
 
-pub fn write_conditional_output_string<W, I, R> (
+pub fn write_conditional_output_string<W, I, R>(
     writer: &mut W,
     reader: I,
-    f: &mut dyn FnMut(&Record) -> Option<String>)
-where
+    f: &mut dyn FnMut(&Record) -> Option<String>,
+) where
     W: Write,
     I: Iterator<Item = R>,
-    R: Borrow<Record>
+    R: Borrow<Record>,
 {
-    reader
-        .for_each(|x| {
-            assert!(
-                x.borrow().valid(), 
-                "Invalid Nucleotides in record: {}", 
-                from_utf8(x.borrow().id()).expect("invalid utf8"));
-            if let Some(s) = f(x.borrow()) {
-                write!(writer, "{}", s)
-                    .expect("Error Writing to File");
-            }
-        });
+    reader.for_each(|x| {
+        assert!(
+            x.borrow().valid(),
+            "Invalid Nucleotides in record: {}",
+            from_utf8(x.borrow().id()).expect("invalid utf8")
+        );
+        if let Some(s) = f(x.borrow()) {
+            write!(writer, "{}", s).expect("Error Writing to File");
+        }
+    });
 }
 
-pub fn run(
-    input: &str,
-    adapter: &str,
-    output: Option<String>,
-    trim_adapter: bool,
-) -> Result<()> {
+pub fn run(input: &str, adapter: &str, output: Option<String>, trim_adapter: bool) -> Result<()> {
     let reader = initialize_reader(input)?;
     let mut trimmer = Trimmer::new(adapter.to_string(), trim_adapter);
     let mut writer = match_output_stream(output)?;
 
     let spinner = Spinner::new_with_stream(
         Spinners::Dots12,
-        format!("Trimming records with adapter: {}", adapter), 
-        Color::Green, 
-        Streams::Stderr);
+        format!("Trimming records with adapter: {}", adapter),
+        Color::Green,
+        Streams::Stderr,
+    );
 
     write_conditional_output_string(&mut writer, reader, &mut |x| trimmer.trim(x));
 
     spinner.stop_with_message(&format!(
         "Trimmed {} out of {} records ( {:.2}% )",
-        trimmer.num_trimmed, 
+        trimmer.num_trimmed,
         trimmer.num_records,
         100.0 * trimmer.num_trimmed as f64 / trimmer.num_records as f64
     ));
