@@ -99,6 +99,25 @@ enum Commands {
         #[clap(short, long, value_parser, default_value="1.0")]
         /// Number of samples to calculate positional entropy on
         zscore_threshold: f64
+    },
+
+    /// Trims adapter sequences that are dynamically placed within the sequence.
+    Trim {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to trim sequences
+        input: String,
+
+        #[clap(short, long, value_parser)]
+        /// Adapater sequence to trim
+        adapter: String,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>,
+
+        #[clap(short, long, value_parser, default_value="false")]
+        /// Trim the adapter off the sequence
+        trim_adapter: bool,
     }
 }
 
@@ -121,6 +140,9 @@ fn main() -> Result<()> {
         },
         Commands::ExtractVariable { input, output, num_samples, zscore_threshold } => {
             commands::extract::run(&input, output, num_samples, zscore_threshold)?;
+        },
+        Commands::Trim { input, output, adapter, trim_adapter } => {
+            commands::trim::run(&input, &adapter, output, trim_adapter)?;
         }
     };
 
