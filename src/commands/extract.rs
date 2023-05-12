@@ -61,6 +61,7 @@ fn position_counts(
                 .seq()
                 .iter()
                 .enumerate()
+                .take(size)
                 .map(|(idx, byte)| (idx, base_map(*byte)))
                 .for_each(|(idx, jdx)| increment_positional_matrix(&mut posmat, idx, jdx));
             posmat
