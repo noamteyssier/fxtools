@@ -26,9 +26,9 @@ fn format_print(record: &Record) -> String {
 }
 
 /// Runs uppercase
-pub fn run(input: &str, output: Option<String>) -> Result<()> {
+pub fn run(input: &str, output: Option<String>, num_threads: Option<usize>) -> Result<()> {
     let reader = initialize_reader(input)?;
-    let mut writer = match_output_stream(output)?;
+    let mut writer = match_output_stream(output, num_threads)?;
     write_output(&mut writer, reader, &format_print);
     Ok(())
 }

@@ -25,6 +25,10 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write unique records to
         null: Option<String>,
+        
+        #[clap(short='j', long, value_parser)]
+        /// Number of threads to use in gzip compression
+        num_threads: Option<usize>,
     },
 
     /// Creates a mapping of sgRNAs to their parent gene
@@ -61,6 +65,10 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>,
+        
+        #[clap(short='j', long, value_parser)]
+        /// Number of threads to use in gzip compression
+        num_threads: Option<usize>,
     },
 
     /// Creates the Reverse complement for a provided fastx
@@ -72,6 +80,10 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>,
+        
+        #[clap(short='j', long, value_parser)]
+        /// Number of threads to use in gzip compression
+        num_threads: Option<usize>,
     },
 
     /// Filters same length sequences to their variable region. Useful in CRISPRi/a libraries where
@@ -92,6 +104,10 @@ enum Commands {
         #[clap(short, long, value_parser, default_value = "1.0")]
         /// Number of samples to calculate positional entropy on
         zscore_threshold: f64,
+        
+        #[clap(short='j', long, value_parser)]
+        /// Number of threads to use in gzip compression
+        num_threads: Option<usize>,
     },
 
     /// Trims adapter sequences that are dynamically placed within the sequence.
@@ -111,6 +127,10 @@ enum Commands {
         #[clap(short, long, value_parser, default_value = "false")]
         /// Trim the adapter off the sequence
         trim_adapter: bool,
+        
+        #[clap(short='j', long, value_parser)]
+        /// Number of threads to use in gzip compression
+        num_threads: Option<usize>,
     },
 }
 
@@ -122,8 +142,9 @@ fn main() -> Result<()> {
             input,
             output,
             null,
+            num_threads,
         } => {
-            commands::unique::run(&input, output, null)?;
+            commands::unique::run(&input, output, null, num_threads)?;
         }
         Commands::SgrnaTable {
             input,
@@ -134,27 +155,29 @@ fn main() -> Result<()> {
         } => {
             commands::sgrna_table::run(&input, output, include_sequence, delim, reorder)?;
         }
-        Commands::Upper { input, output } => {
-            commands::upper::run(&input, output)?;
+        Commands::Upper { input, output, num_threads } => {
+            commands::upper::run(&input, output, num_threads)?;
         }
-        Commands::Reverse { input, output } => {
-            commands::reverse::run(&input, output)?;
+        Commands::Reverse { input, output, num_threads } => {
+            commands::reverse::run(&input, output, num_threads)?;
         }
         Commands::ExtractVariable {
             input,
             output,
             num_samples,
             zscore_threshold,
+            num_threads
         } => {
-            commands::extract::run(&input, output, num_samples, zscore_threshold)?;
+            commands::extract::run(&input, output, num_samples, zscore_threshold, num_threads)?;
         }
         Commands::Trim {
             input,
             output,
             adapter,
             trim_adapter,
+            num_threads,
         } => {
-            commands::trim::run(&input, &adapter, output, trim_adapter)?;
+            commands::trim::run(&input, &adapter, output, trim_adapter, num_threads)?;
         }
     };
 
