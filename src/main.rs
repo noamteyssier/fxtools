@@ -25,8 +25,8 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write unique records to
         null: Option<String>,
-        
-        #[clap(short='j', long, value_parser)]
+
+        #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
     },
@@ -65,8 +65,8 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>,
-        
-        #[clap(short='j', long, value_parser)]
+
+        #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
     },
@@ -80,8 +80,8 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>,
-        
-        #[clap(short='j', long, value_parser)]
+
+        #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
     },
@@ -104,8 +104,8 @@ enum Commands {
         #[clap(short, long, value_parser, default_value = "1.0")]
         /// Number of samples to calculate positional entropy on
         zscore_threshold: f64,
-        
-        #[clap(short='j', long, value_parser)]
+
+        #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
     },
@@ -127,8 +127,8 @@ enum Commands {
         #[clap(short, long, value_parser, default_value = "false")]
         /// Trim the adapter off the sequence
         trim_adapter: bool,
-        
-        #[clap(short='j', long, value_parser)]
+
+        #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
     },
@@ -155,10 +155,18 @@ fn main() -> Result<()> {
         } => {
             commands::sgrna_table::run(&input, output, include_sequence, delim, reorder)?;
         }
-        Commands::Upper { input, output, num_threads } => {
+        Commands::Upper {
+            input,
+            output,
+            num_threads,
+        } => {
             commands::upper::run(&input, output, num_threads)?;
         }
-        Commands::Reverse { input, output, num_threads } => {
+        Commands::Reverse {
+            input,
+            output,
+            num_threads,
+        } => {
             commands::reverse::run(&input, output, num_threads)?;
         }
         Commands::ExtractVariable {
@@ -166,7 +174,7 @@ fn main() -> Result<()> {
             output,
             num_samples,
             zscore_threshold,
-            num_threads
+            num_threads,
         } => {
             commands::extract::run(&input, output, num_samples, zscore_threshold, num_threads)?;
         }

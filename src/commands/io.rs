@@ -7,7 +7,10 @@ use std::io::Write;
 use std::{fs::File, io::stdout, str::from_utf8};
 
 /// Matches the output to a writer stream
-pub fn match_output_stream(output: Option<String>, num_threads: Option<usize>) -> Result<Box<dyn Write>> {
+pub fn match_output_stream(
+    output: Option<String>,
+    num_threads: Option<usize>,
+) -> Result<Box<dyn Write>> {
     match output {
         Some(path) => {
             if path.ends_with(".gz") {
@@ -19,7 +22,7 @@ pub fn match_output_stream(output: Option<String>, num_threads: Option<usize>) -
             } else {
                 Ok(Box::new(File::create(path)?))
             }
-        },
+        }
         None => Ok(Box::new(stdout())),
     }
 }

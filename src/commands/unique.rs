@@ -124,7 +124,12 @@ fn format_print(record: &Record) -> String {
     }
 }
 
-pub fn run(path: &str, output: Option<String>, null: Option<String>, num_threads: Option<usize>) -> Result<()> {
+pub fn run(
+    path: &str,
+    output: Option<String>,
+    null: Option<String>,
+    num_threads: Option<usize>,
+) -> Result<()> {
     let reader = initialize_reader(path)?;
 
     let spinner = Spinner::new_with_stream(

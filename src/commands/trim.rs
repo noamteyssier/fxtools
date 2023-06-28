@@ -93,7 +93,13 @@ pub fn write_conditional_output_string<W, I, R>(
     });
 }
 
-pub fn run(input: &str, adapter: &str, output: Option<String>, trim_adapter: bool, num_threads: Option<usize>) -> Result<()> {
+pub fn run(
+    input: &str,
+    adapter: &str,
+    output: Option<String>,
+    trim_adapter: bool,
+    num_threads: Option<usize>,
+) -> Result<()> {
     let reader = initialize_reader(input)?;
     let mut trimmer = Trimmer::new(adapter.to_string(), trim_adapter);
     let mut writer = match_output_stream(output, num_threads)?;
