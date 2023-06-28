@@ -1,13 +1,25 @@
 use anyhow::Result;
 use fxread::Record;
+use gzp::deflate::Gzip;
+use gzp::par::compress::{ParCompress, ParCompressBuilder};
 use std::borrow::Borrow;
 use std::io::Write;
 use std::{fs::File, io::stdout, str::from_utf8};
 
 /// Matches the output to a writer stream
-pub fn match_output_stream(output: Option<String>) -> Result<Box<dyn Write>> {
+pub fn match_output_stream(output: Option<String>, num_threads: Option<usize>) -> Result<Box<dyn Write>> {
     match output {
-        Some(path) => Ok(Box::new(File::create(path)?)),
+        Some(path) => {
+            if path.ends_with(".gz") {
+                let file = File::create(path)?;
+                let writer: ParCompress<Gzip> = ParCompressBuilder::new()
+                    .num_threads(num_threads.unwrap_or(1))?
+                    .from_writer(file);
+                Ok(Box::new(writer))
+            } else {
+                Ok(Box::new(File::create(path)?))
+            }
+        },
         None => Ok(Box::new(stdout())),
     }
 }
