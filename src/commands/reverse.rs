@@ -26,9 +26,9 @@ fn format_print(record: &Record) -> String {
 }
 
 /// Runs reverse
-pub fn run(input: &str, output: Option<String>) -> Result<()> {
+pub fn run(input: &str, output: Option<String>, num_threads: Option<usize>) -> Result<()> {
     let reader = initialize_reader(input)?;
-    let mut writer = match_output_stream(output)?;
+    let mut writer = match_output_stream(output, num_threads)?;
     write_output(&mut writer, reader, &format_print);
     Ok(())
 }
@@ -78,7 +78,7 @@ mod test {
     #[should_panic]
     fn run_invalid_fasta() {
         let reader = invalid_fasta_reader();
-        let mut writer = match_output_stream(None).unwrap();
+        let mut writer = match_output_stream(None, None).unwrap();
         write_output(&mut writer, reader, &format_print)
     }
 
@@ -86,7 +86,7 @@ mod test {
     #[should_panic]
     fn run_invalid_fastq() {
         let reader = invalid_fastq_reader();
-        let mut writer = match_output_stream(None).unwrap();
+        let mut writer = match_output_stream(None, None).unwrap();
         write_output(&mut writer, reader, &format_print)
     }
 }

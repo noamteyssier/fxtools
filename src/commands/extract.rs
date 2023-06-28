@@ -194,6 +194,7 @@ pub fn run(
     output: Option<String>,
     num_samples: usize,
     zscore_threshold: f64,
+    num_threads: Option<usize>,
 ) -> Result<()> {
     let spinner = Spinner::new_with_stream(
         Spinners::Dots12,
@@ -221,7 +222,7 @@ pub fn run(
 
     // Reinitialize reader and write to output
     let reader = initialize_reader(input)?;
-    let mut writer = match_output_stream(output)?;
+    let mut writer = match_output_stream(output, num_threads)?;
     write_to_output(&mut writer, reader, pos_min, pos_max);
     Ok(())
 }
