@@ -148,7 +148,7 @@ pub fn run(
 #[cfg(test)]
 mod testing {
 
-    use fxread::{FastqReader, FastxRead, FastaReader};
+    use fxread::{FastaReader, FastqReader, FastxRead};
 
     use super::*;
 
