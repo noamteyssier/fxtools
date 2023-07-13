@@ -1,8 +1,8 @@
 use std::str::from_utf8;
 
+use super::match_output_stream;
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
-use super::match_output_stream;
 
 fn prepare_record(record: &Record) -> String {
     if let Some(_) = record.qual() {
@@ -22,11 +22,7 @@ fn prepare_record(record: &Record) -> String {
     }
 }
 
-fn write_pair<W>(
-    writer_r1: &mut W,
-    writer_r2: &mut W,
-    records: &[(Record, Record)],
-) -> Result<()>
+fn write_pair<W>(writer_r1: &mut W, writer_r2: &mut W, records: &[(Record, Record)]) -> Result<()>
 where
     W: std::io::Write,
 {
@@ -47,7 +43,6 @@ fn sort_paired_end(
     sort_by_r1: bool,
     num_threads: Option<usize>,
 ) -> Result<()> {
-
     // Determine output paths
     let mut output_r1 = format!("{prefix}_R1.fastq");
     let mut output_r2 = format!("{prefix}_R2.fastq");
@@ -62,7 +57,10 @@ fn sort_paired_end(
     let reader_r2 = initialize_reader(r2)?;
 
     // Zip paired readers into a single iterator and collect into a vector
-    let mut records = reader_r1.into_iter().zip(reader_r2.into_iter()).collect::<Vec<_>>();
+    let mut records = reader_r1
+        .into_iter()
+        .zip(reader_r2.into_iter())
+        .collect::<Vec<_>>();
 
     // Sort by sequence
     if sort_by_r1 {
@@ -85,7 +83,6 @@ fn sort_single_end(
     gzip: bool,
     num_threads: Option<usize>,
 ) -> Result<()> {
-
     // Determine output path
     let mut output = format!("{prefix}_R1.fastq");
 
@@ -113,7 +110,6 @@ fn sort_single_end(
 
     Ok(())
 }
-
 
 pub fn run(
     input: &str,

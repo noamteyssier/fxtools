@@ -135,11 +135,11 @@ enum Commands {
 
     /// Sorts a fastx file by sequence
     Sort {
-        #[clap(short='i', long, value_parser)]
+        #[clap(short = 'i', long, value_parser)]
         /// Input FASTA/Q to sort
         r1: String,
 
-        #[clap(short='I', long, value_parser)]
+        #[clap(short = 'I', long, value_parser)]
         /// Optional choice of R2 to sort by
         r2: Option<String>,
 
@@ -158,7 +158,7 @@ enum Commands {
         #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
-    }
+    },
 }
 
 fn main() -> Result<()> {
@@ -213,7 +213,7 @@ fn main() -> Result<()> {
             num_threads,
         } => {
             commands::trim::run(&input, &adapter, output, trim_adapter, num_threads)?;
-        },
+        }
         Commands::Sort {
             r1,
             r2,
