@@ -148,12 +148,23 @@ pub fn run(
 #[cfg(test)]
 mod testing {
 
-    use fxread::{FastqReader, FastxRead};
+    use fxread::{FastqReader, FastxRead, FastaReader};
 
     use super::*;
 
     const FASTQ_R1: &[u8] = b"@r1\nACGT\n+\nIIII\n@r2\nTGCA\n+\nIIII\n";
     const FASTQ_R2: &[u8] = b"@r1\nTGCA\n+\nIIII\n@r2\nACGT\n+\nIIII\n";
+
+    const FASTA_R1: &[u8] = b">r1\nACGT\n>r2\nTGCA\n";
+    const FASTA_R2: &[u8] = b">r1\nTGCA\n>r2\nACGT\n";
+
+    fn r1_fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
+        Box::new(FastaReader::new(FASTA_R1))
+    }
+
+    fn r2_fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
+        Box::new(FastaReader::new(FASTA_R2))
+    }
 
     fn r1_fastq_reader() -> Box<dyn FastxRead<Item = Record>> {
         Box::new(FastqReader::new(FASTQ_R1))
@@ -181,6 +192,29 @@ mod testing {
     #[test]
     fn sort_paired_fastq_by_r1() {
         let mut records = join_readers(r1_fastq_reader(), r2_fastq_reader());
+        sort_paired_records(&mut records, true);
+        assert_eq!(records[0].0.id(), b"r1");
+        assert_eq!(records[0].1.id(), b"r1");
+    }
+
+    #[test]
+    fn sort_single_fasta() {
+        let mut records = join_reader(r1_fasta_reader());
+        sort_records(&mut records);
+        assert_eq!(records[0].id(), b"r1");
+    }
+
+    #[test]
+    fn sort_paired_fasta_by_r2() {
+        let mut records = join_readers(r1_fasta_reader(), r2_fasta_reader());
+        sort_paired_records(&mut records, false);
+        assert_eq!(records[0].0.id(), b"r2");
+        assert_eq!(records[0].1.id(), b"r2");
+    }
+
+    #[test]
+    fn sort_paired_fasta_by_r1() {
+        let mut records = join_readers(r1_fasta_reader(), r2_fasta_reader());
         sort_paired_records(&mut records, true);
         assert_eq!(records[0].0.id(), b"r1");
         assert_eq!(records[0].1.id(), b"r1");
