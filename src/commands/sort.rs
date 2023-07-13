@@ -2,7 +2,7 @@ use std::str::from_utf8;
 
 use super::match_output_stream;
 use anyhow::Result;
-use fxread::{initialize_reader, Record, FastxRead};
+use fxread::{initialize_reader, FastxRead, Record};
 
 fn prepare_record(record: &Record) -> String {
     if let Some(_) = record.qual() {
@@ -35,9 +35,7 @@ where
     Ok(())
 }
 
-fn join_reader(
-    reader: Box<dyn FastxRead<Item = Record>>,
-) -> Vec<Record> {
+fn join_reader(reader: Box<dyn FastxRead<Item = Record>>) -> Vec<Record> {
     reader.into_iter().collect::<Vec<_>>()
 }
 
@@ -45,7 +43,10 @@ fn join_readers(
     reader_r1: Box<dyn FastxRead<Item = Record>>,
     reader_r2: Box<dyn FastxRead<Item = Record>>,
 ) -> Vec<(Record, Record)> {
-    reader_r1.into_iter().zip(reader_r2.into_iter()).collect::<Vec<_>>()
+    reader_r1
+        .into_iter()
+        .zip(reader_r2.into_iter())
+        .collect::<Vec<_>>()
 }
 
 fn sort_records(records: &mut Vec<Record>) {
@@ -147,7 +148,7 @@ pub fn run(
 #[cfg(test)]
 mod testing {
 
-    use fxread::{FastxRead, FastqReader};
+    use fxread::{FastqReader, FastxRead};
 
     use super::*;
 
