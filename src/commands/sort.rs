@@ -11,7 +11,7 @@ fn prepare_record(record: &Record) -> String {
             from_utf8(record.id()).expect("invalid utf8"),
             from_utf8(record.seq()).expect("invalid utf8"),
             from_utf8(record.plus().unwrap()).expect("invalid utf8"),
-            from_utf8(record.seq()).expect("invalid utf8"),
+            from_utf8(record.qual().unwrap()).expect("invalid utf8"),
         )
     } else {
         format!(
