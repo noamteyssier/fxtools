@@ -68,6 +68,7 @@ fn sort_paired_end(
     gzip: bool,
     sort_by_r1: bool,
     num_threads: Option<usize>,
+    compression_level: Option<usize>,
 ) -> Result<()> {
     // Determine output paths
     let mut output_r1 = format!("{prefix}_R1.fastq");
@@ -89,8 +90,8 @@ fn sort_paired_end(
     sort_paired_records(&mut records, sort_by_r1);
 
     // Initialize writers
-    let mut writer_r1 = match_output_stream(Some(output_r1), num_threads)?;
-    let mut writer_r2 = match_output_stream(Some(output_r2), num_threads)?;
+    let mut writer_r1 = match_output_stream(Some(output_r1), num_threads, compression_level)?;
+    let mut writer_r2 = match_output_stream(Some(output_r2), num_threads, compression_level)?;
 
     // Write sorted records
     write_pair(&mut writer_r1, &mut writer_r2, &records)
@@ -101,6 +102,7 @@ fn sort_single_end(
     prefix: &str,
     gzip: bool,
     num_threads: Option<usize>,
+    compression_level: Option<usize>,
 ) -> Result<()> {
     // Determine output path
     let mut output = format!("{prefix}_R1.fastq");
@@ -119,7 +121,7 @@ fn sort_single_end(
     sort_records(&mut records);
 
     // Initialize writer
-    let mut writer = match_output_stream(Some(output), num_threads)?;
+    let mut writer = match_output_stream(Some(output), num_threads, compression_level)?;
 
     // Write sorted records
     for record in records {
@@ -137,11 +139,12 @@ pub fn run(
     gzip: bool,
     sort_by_r1: bool,
     num_threads: Option<usize>,
+    compression_level: Option<usize>,
 ) -> Result<()> {
     if let Some(r2) = r2 {
-        sort_paired_end(input, &r2, prefix, gzip, sort_by_r1, num_threads)
+        sort_paired_end(input, &r2, prefix, gzip, sort_by_r1, num_threads, compression_level)
     } else {
-        sort_single_end(input, prefix, gzip, num_threads)
+        sort_single_end(input, prefix, gzip, num_threads, compression_level)
     }
 }
 
