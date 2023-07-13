@@ -129,6 +129,7 @@ pub fn run(
     output: Option<String>,
     null: Option<String>,
     num_threads: Option<usize>,
+    compression_level: Option<usize>,
 ) -> Result<()> {
     let reader = initialize_reader(path)?;
 
@@ -150,7 +151,7 @@ pub fn run(
     );
 
     // write unique sequences
-    let mut unique_writer = match_output_stream(output, num_threads)?;
+    let mut unique_writer = match_output_stream(output, num_threads, compression_level)?;
     write_output(
         &mut unique_writer,
         Box::new(unique.passing_records()),
@@ -159,7 +160,7 @@ pub fn run(
 
     // write null sequences if required
     if null.is_some() {
-        let mut null_writer = match_output_stream(null, num_threads)?;
+        let mut null_writer = match_output_stream(null, num_threads, compression_level)?;
         write_output(
             &mut null_writer,
             Box::new(unique.null_records()),

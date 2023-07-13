@@ -29,6 +29,10 @@ enum Commands {
         #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
+
+        #[clap(short='Z', long, value_parser)]
+        /// gzip compression level
+        compression_level: Option<usize>,
     },
 
     /// Creates a mapping of sgRNAs to their parent gene
@@ -69,6 +73,10 @@ enum Commands {
         #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
+
+        #[clap(short='Z', long, value_parser)]
+        /// gzip compression level
+        compression_level: Option<usize>,
     },
 
     /// Creates the Reverse complement for a provided fastx
@@ -84,6 +92,10 @@ enum Commands {
         #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
+
+        #[clap(short='Z', long, value_parser)]
+        /// gzip compression level
+        compression_level: Option<usize>,
     },
 
     /// Filters same length sequences to their variable region. Useful in CRISPRi/a libraries where
@@ -108,6 +120,10 @@ enum Commands {
         #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
+
+        #[clap(short='Z', long, value_parser)]
+        /// gzip compression level
+        compression_level: Option<usize>,
     },
 
     /// Trims adapter sequences that are dynamically placed within the sequence.
@@ -131,6 +147,10 @@ enum Commands {
         #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
+
+        #[clap(short='Z', long, value_parser)]
+        /// gzip compression level
+        compression_level: Option<usize>,
     },
 
     /// Sorts a fastx file by sequence
@@ -158,6 +178,10 @@ enum Commands {
         #[clap(short = 'j', long, value_parser)]
         /// Number of threads to use in gzip compression
         num_threads: Option<usize>,
+
+        #[clap(short='Z', long, value_parser)]
+        /// gzip compression level
+        compression_level: Option<usize>,
     },
 }
 
@@ -170,8 +194,9 @@ fn main() -> Result<()> {
             output,
             null,
             num_threads,
+            compression_level,
         } => {
-            commands::unique::run(&input, output, null, num_threads)?;
+            commands::unique::run(&input, output, null, num_threads, compression_level)?;
         }
         Commands::SgrnaTable {
             input,
@@ -186,15 +211,17 @@ fn main() -> Result<()> {
             input,
             output,
             num_threads,
+            compression_level,
         } => {
-            commands::upper::run(&input, output, num_threads)?;
+            commands::upper::run(&input, output, num_threads, compression_level)?;
         }
         Commands::Reverse {
             input,
             output,
             num_threads,
+            compression_level,
         } => {
-            commands::reverse::run(&input, output, num_threads)?;
+            commands::reverse::run(&input, output, num_threads, compression_level)?;
         }
         Commands::ExtractVariable {
             input,
@@ -202,8 +229,9 @@ fn main() -> Result<()> {
             num_samples,
             zscore_threshold,
             num_threads,
+            compression_level,
         } => {
-            commands::extract::run(&input, output, num_samples, zscore_threshold, num_threads)?;
+            commands::extract::run(&input, output, num_samples, zscore_threshold, num_threads, compression_level)?;
         }
         Commands::Trim {
             input,
@@ -211,8 +239,9 @@ fn main() -> Result<()> {
             adapter,
             trim_adapter,
             num_threads,
+            compression_level,
         } => {
-            commands::trim::run(&input, &adapter, output, trim_adapter, num_threads)?;
+            commands::trim::run(&input, &adapter, output, trim_adapter, num_threads, compression_level)?;
         }
         Commands::Sort {
             r1,
@@ -221,8 +250,9 @@ fn main() -> Result<()> {
             gzip,
             sort_by_r1,
             num_threads,
+            compression_level,
         } => {
-            commands::sort::run(&r1, r2, &prefix, gzip, sort_by_r1, num_threads)?;
+            commands::sort::run(&r1, r2, &prefix, gzip, sort_by_r1, num_threads, compression_level)?;
         }
     };
 

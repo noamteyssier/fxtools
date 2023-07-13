@@ -1,5 +1,6 @@
 use anyhow::Result;
 use fxread::Record;
+use gzp::Compression;
 use gzp::deflate::Gzip;
 use gzp::par::compress::{ParCompress, ParCompressBuilder};
 use std::borrow::Borrow;
@@ -10,6 +11,7 @@ use std::{fs::File, io::stdout, str::from_utf8};
 pub fn match_output_stream(
     output: Option<String>,
     num_threads: Option<usize>,
+    compression_level: Option<usize>,
 ) -> Result<Box<dyn Write>> {
     match output {
         Some(path) => {
@@ -17,6 +19,13 @@ pub fn match_output_stream(
                 let file = File::create(path)?;
                 let writer: ParCompress<Gzip> = ParCompressBuilder::new()
                     .num_threads(num_threads.unwrap_or(1))?
+                    .compression_level(
+                        if let Some(level) = compression_level {
+                            Compression::new(level as u32)
+                        } else {
+                            Compression::default()
+                        },
+                    )
                     .from_writer(file);
                 Ok(Box::new(writer))
             } else {
