@@ -1,5 +1,7 @@
 # [ `fxtools trim` ]
 
+## Summary
+
 This tool can be used to select and trim sequences
 that contain a specified adapter sequence.
 

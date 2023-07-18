@@ -1,5 +1,7 @@
 # [ `fxtools sort` ]
 
+## Summary
+
 This tool can be used to sort a `fastx` file or
 a pair of equivalently sized `fastx` files based on
 sequence.
