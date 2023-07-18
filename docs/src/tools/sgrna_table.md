@@ -1,10 +1,15 @@
 # [ `fxtools sgrna-table` ]
 
+## Summary
 This command will create a table mapping sgRNA names to their parent gene. 
+
+### Expected Input
 This works by parsing the header of each record and currently it expects the header to be as follows:
 ```bash
 # {gene}_{auxilliary sgrna description}
 ```
+
+### Parameters
 
 The command requires an input fasta/q file and will by default write a sgrna-to-gene table to stdout.
 
