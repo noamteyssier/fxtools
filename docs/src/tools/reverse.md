@@ -10,24 +10,20 @@ Useful for `grep` for a sequence in `R2` or vice versa.
 
 ### Expected Input
 
-This will reverse each of the sequences and potential quality scores.
-
-This **will not** take the reverse complement of your sequences.
+This will reverse complement each of the sequences and potential quality scores.
 
 ``` text
-[sequence]
-[sequence]
-   ...
-[sequence]
+ACTG
+GCTA
+AAAA
 ```
 
 ### Expected Output
 
 ``` text
-[ecneuqes]
-[ecneuqes]
-   ...
-[ecneuqes]
+CAGT
+TAGC
+TTTT
 ```
 
 ## Usage
