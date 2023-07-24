@@ -19,4 +19,4 @@ ndarray-stats = "0.5.0"
 ndarray = "0.15.6"
 spinoff = "0.5.3"
 memchr = "2.5.0"
-gzp = "0.11.3"
+gzp = { version="0.11.3", features=["deflate_rust"], default-features = false }
