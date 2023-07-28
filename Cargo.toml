@@ -1,6 +1,6 @@
 [package]
 name = "fxtools"
-version = "0.2.17"
+version = "0.2.18"
 edition = "2021"
 description = "A collection of commandline Fasta/Fastq utility tools"
 documentation = "https://docs.rs/fxtools"
@@ -12,7 +12,7 @@ categories = ["command-line-utilities", "science"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fxread = "0.2.8"
+fxread = "0.2.9"
 clap = { version = "3", features = ["derive"] }
 anyhow = "1"
 ndarray-stats = "0.5.0"

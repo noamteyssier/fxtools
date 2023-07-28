@@ -1,7 +1,7 @@
 use anyhow::Result;
-use fxread::{initialize_reader, FastxRead, Record};
+use fxread::{initialize_reader, initialize_stdin_reader, FastxRead, Record};
 use spinoff::{Color, Spinner, Spinners, Streams};
-use std::collections::HashMap;
+use std::{collections::HashMap, io::stdin};
 
 use super::{match_output_stream, write_output, write_output_with_invalid};
 
@@ -107,14 +107,18 @@ fn format_print(record: &Record) -> &str {
 }
 
 pub fn run(
-    path: &str,
+    path: Option<String>,
     output: Option<String>,
     null: Option<String>,
     num_threads: Option<usize>,
     compression_level: Option<usize>,
     allow_invalid: bool,
 ) -> Result<()> {
-    let reader = initialize_reader(path)?;
+    let reader = if let Some(path) = path {
+        initialize_reader(&path)
+    } else {
+        initialize_stdin_reader(stdin().lock())
+    }?;
 
     let spinner = Spinner::new_with_stream(
         Spinners::Dots12,

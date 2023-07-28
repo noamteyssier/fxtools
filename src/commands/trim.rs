@@ -1,7 +1,11 @@
-use std::{borrow::Borrow, io::Write, str::from_utf8};
+use std::{
+    borrow::Borrow,
+    io::{stdin, Write},
+    str::from_utf8,
+};
 
 use anyhow::Result;
-use fxread::{initialize_reader, Record};
+use fxread::{initialize_reader, initialize_stdin_reader, Record};
 use memchr::memmem;
 use spinoff::{Color, Spinner, Spinners, Streams};
 
@@ -94,14 +98,18 @@ pub fn write_conditional_output_string<W, I, R>(
 }
 
 pub fn run(
-    input: &str,
+    input: Option<String>,
     adapter: &str,
     output: Option<String>,
     trim_adapter: bool,
     num_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
-    let reader = initialize_reader(input)?;
+    let reader = if let Some(path) = input {
+        initialize_reader(&path)
+    } else {
+        initialize_stdin_reader(stdin().lock())
+    }?;
     let mut trimmer = Trimmer::new(adapter.to_string(), trim_adapter);
     let mut writer = match_output_stream(output, num_threads, compression_level)?;
 

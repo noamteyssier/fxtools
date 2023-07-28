@@ -1,6 +1,8 @@
+use std::io::stdin;
+
 use super::{match_output_stream, write_mut_output};
 use anyhow::Result;
-use fxread::{initialize_reader, Record};
+use fxread::{initialize_reader, initialize_stdin_reader, Record};
 
 /// Reverse complement sequence and create a string representation of the record
 fn format_print(record: &mut Record) -> &str {
@@ -10,12 +12,16 @@ fn format_print(record: &mut Record) -> &str {
 
 /// Runs reverse
 pub fn run(
-    input: &str,
+    input: Option<String>,
     output: Option<String>,
     num_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
-    let reader = initialize_reader(input)?;
+    let reader = if let Some(path) = input {
+        initialize_reader(&path)
+    } else {
+        initialize_stdin_reader(stdin().lock())
+    }?;
     let mut writer = match_output_stream(output, num_threads, compression_level)?;
     write_mut_output(&mut writer, reader, &format_print);
     Ok(())

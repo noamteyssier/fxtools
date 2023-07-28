@@ -1,6 +1,8 @@
+use std::io::stdin;
+
 use super::{match_output_stream, write_mut_output, write_mut_output_with_invalid};
 use anyhow::Result;
-use fxread::{initialize_reader, Record};
+use fxread::{initialize_reader, initialize_stdin_reader, Record};
 
 /// Format prints the sequence as uppercase
 fn format_print(record: &mut Record) -> &str {
@@ -10,13 +12,17 @@ fn format_print(record: &mut Record) -> &str {
 
 /// Runs uppercase
 pub fn run(
-    input: &str,
+    input: Option<String>,
     output: Option<String>,
     num_threads: Option<usize>,
     compression_level: Option<usize>,
     allow_invalid: bool,
 ) -> Result<()> {
-    let reader = initialize_reader(input)?;
+    let reader = if let Some(path) = input {
+        initialize_reader(&path)
+    } else {
+        initialize_stdin_reader(stdin().lock())
+    }?;
     let mut writer = match_output_stream(output, num_threads, compression_level)?;
     if allow_invalid {
         write_mut_output_with_invalid(&mut writer, reader, &format_print);
