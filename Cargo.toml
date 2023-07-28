@@ -1,6 +1,6 @@
 [package]
 name = "fxtools"
-version = "0.2.17"
+version = "0.2.18"
 edition = "2021"
 description = "A collection of commandline Fasta/Fastq utility tools"
 documentation = "https://docs.rs/fxtools"
