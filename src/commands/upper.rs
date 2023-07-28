@@ -1,7 +1,4 @@
-use super::{
-    write_mut_output, write_mut_output_with_invalid,
-    match_output_stream,
-};
+use super::{match_output_stream, write_mut_output, write_mut_output_with_invalid};
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
 use std::str::from_utf8;

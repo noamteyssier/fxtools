@@ -317,7 +317,7 @@ fn main() -> Result<()> {
                 num_threads,
                 compression_level,
             )?;
-        },
+        }
         Commands::Fix {
             input,
             output,
