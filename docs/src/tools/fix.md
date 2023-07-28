@@ -2,7 +2,7 @@
 
 ## Summary
 
-This command will replace all non-canonical nucleotides (`[ACTGNactgn]`)
+This command will replace all nucleotides not matching: `[ACTGNactgn]`
 with the missing nucleotide `N`.
 
 ### Parameters
@@ -12,7 +12,7 @@ Default will write to stdout, but you can provide an output file with the `-o` f
 ## Usage
 
 ```bash
-fxtools upper \
+fxtools fix \
   -i <input_fastx> \
   -o <output_fastx>
 ```
