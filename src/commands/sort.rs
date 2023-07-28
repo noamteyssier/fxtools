@@ -1,7 +1,7 @@
 use std::io::stdin;
 
 use super::match_output_stream;
-use anyhow::Result;
+use anyhow::{Result, bail};
 use fxread::{initialize_reader, initialize_stdin_reader, FastxRead, Record};
 
 fn write_pair<W>(writer_r1: &mut W, writer_r2: &mut W, records: &[(Record, Record)]) -> Result<()>
@@ -79,17 +79,21 @@ fn sort_paired_end(
 
 fn sort_single_end(
     input: Option<String>,
-    prefix: &str,
+    prefix: Option<String>,
     gzip: bool,
     num_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
     // Determine output path
-    let mut output = format!("{prefix}_R1.fastq");
-
-    if gzip {
-        output.push_str(".gz");
-    }
+    let output_str = if let Some(prefix_path) = prefix {
+        let mut prefix_str = format!("{prefix_path}_R1.fastq");
+        if gzip {
+            prefix_str.push_str(".gz");
+        }
+        Some(prefix_str)
+    } else {
+        None
+    };
 
     // Initialize reader
     let reader = if let Some(path) = input {
@@ -105,7 +109,7 @@ fn sort_single_end(
     sort_records(&mut records);
 
     // Initialize writer
-    let mut writer = match_output_stream(Some(output), num_threads, compression_level)?;
+    let mut writer = match_output_stream(output_str, num_threads, compression_level)?;
 
     // Write sorted records
     for record in records {
@@ -118,7 +122,7 @@ fn sort_single_end(
 pub fn run(
     input: Option<String>,
     r2: Option<String>,
-    prefix: &str,
+    prefix: Option<String>,
     gzip: bool,
     sort_by_r1: bool,
     num_threads: Option<usize>,
@@ -126,12 +130,18 @@ pub fn run(
 ) -> Result<()> {
     if let Some(r2) = r2 {
         if input.is_none() {
-            anyhow::bail!("Error: --r2 requires --input");
+            bail!("Cannot stream R1 input when sorting paired-end reads");
         }
+        let prefix_str = if let Some(prefix) = prefix {
+            prefix
+        } else {
+            "sorted".to_string()
+        };
+
         sort_paired_end(
             &input.unwrap(),
             &r2,
-            prefix,
+            &prefix_str,
             gzip,
             sort_by_r1,
             num_threads,

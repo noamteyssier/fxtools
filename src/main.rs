@@ -171,9 +171,11 @@ enum Commands {
         /// Optional choice of R2 to sort by
         r2: Option<String>,
 
-        #[clap(short, long, value_parser, default_value = "sorted")]
-        /// Prefix to write sorted files to
-        prefix: String,
+        #[clap(short, long, value_parser)]
+        /// Prefix to write sorted files to 
+        /// if single-end [default: stdout]
+        /// if paired-end [default: sorted]
+        prefix: Option<String>,
 
         #[clap(short, long, value_parser, default_value = "true")]
         /// Whether to gzip the output files
@@ -305,7 +307,7 @@ fn main() -> Result<()> {
             commands::sort::run(
                 r1,
                 r2,
-                &prefix,
+                prefix,
                 gzip,
                 sort_by_r1,
                 num_threads,
