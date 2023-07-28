@@ -1,6 +1,8 @@
+use std::io::stdin;
+
 use super::match_output_stream;
 use anyhow::Result;
-use fxread::{initialize_reader, FastxRead, Record};
+use fxread::{initialize_reader, FastxRead, Record, initialize_stdin_reader};
 
 fn write_pair<W>(writer_r1: &mut W, writer_r2: &mut W, records: &[(Record, Record)]) -> Result<()>
 where
@@ -76,7 +78,7 @@ fn sort_paired_end(
 }
 
 fn sort_single_end(
-    input: &str,
+    input: Option<String>,
     prefix: &str,
     gzip: bool,
     num_threads: Option<usize>,
@@ -90,7 +92,11 @@ fn sort_single_end(
     }
 
     // Initialize reader
-    let reader = initialize_reader(input)?;
+    let reader = if let Some(path) = input {
+        initialize_reader(&path)
+    } else {
+        initialize_stdin_reader(stdin().lock())
+    }?;
 
     // Collect records into a vector
     let mut records = join_reader(reader);
@@ -110,7 +116,7 @@ fn sort_single_end(
 }
 
 pub fn run(
-    input: &str,
+    input: Option<String>,
     r2: Option<String>,
     prefix: &str,
     gzip: bool,
@@ -119,8 +125,11 @@ pub fn run(
     compression_level: Option<usize>,
 ) -> Result<()> {
     if let Some(r2) = r2 {
+        if input.is_none() {
+            anyhow::bail!("Error: --r2 requires --input");
+        }
         sort_paired_end(
-            input,
+            &input.unwrap(),
             &r2,
             prefix,
             gzip,

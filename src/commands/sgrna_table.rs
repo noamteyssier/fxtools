@@ -1,10 +1,10 @@
 use anyhow::Result;
-use fxread::{FastxRead, Record};
+use fxread::{FastxRead, Record, initialize_reader, initialize_stdin_reader};
 use spinoff::{Color, Spinner, Spinners, Streams};
 use std::{
     collections::HashMap,
     fs::File,
-    io::{stdout, Write},
+    io::{stdout, Write, stdin},
     str::from_utf8,
 };
 
@@ -155,7 +155,7 @@ fn validate_order(order: &str) {
 }
 
 pub fn run(
-    input: &str,
+    input: Option<String>,
     output: Option<String>,
     include_sequence: bool,
     delim: Option<char>,
@@ -173,7 +173,12 @@ pub fn run(
 
     validate_order(&order);
 
-    let reader = fxread::initialize_reader(input)?;
+    let reader = if let Some(path) = input {
+        initialize_reader(&path)
+    } else {
+        initialize_stdin_reader(stdin().lock())
+    }?;
+
     let spinner = Spinner::new_with_stream(
         Spinners::Dots12,
         "Mapping sgRNAs to Parent Genes".to_string(),
