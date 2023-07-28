@@ -4,7 +4,7 @@ use spinoff::{Color, Spinner, Spinners, Streams};
 use std::collections::HashMap;
 use std::str::from_utf8;
 
-use super::{io::write_output_with_invalid, match_output_stream, write_output};
+use super::{write_output_with_invalid, match_output_stream, write_output};
 
 type UniqMap = HashMap<Vec<u8>, Record>;
 type NullMap = HashMap<Vec<u8>, Vec<Record>>;

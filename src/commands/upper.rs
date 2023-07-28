@@ -1,5 +1,5 @@
 use super::{
-    io::{write_mut_output, write_mut_output_with_invalid},
+    write_mut_output, write_mut_output_with_invalid,
     match_output_stream,
 };
 use anyhow::Result;

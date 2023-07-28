@@ -1,4 +1,4 @@
-use super::{io::write_mut_output, match_output_stream};
+use super::{write_mut_output, match_output_stream};
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
 use std::str::from_utf8;
