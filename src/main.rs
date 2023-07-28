@@ -33,6 +33,10 @@ enum Commands {
         #[clap(short='Z', long, value_parser)]
         /// gzip compression level
         compression_level: Option<usize>,
+
+        #[clap(short, long, value_parser)]
+        /// Allow invalid nucleotides in output
+        allow_invalid: bool,
     },
 
     /// Creates a mapping of sgRNAs to their parent gene
@@ -77,6 +81,10 @@ enum Commands {
         #[clap(short='Z', long, value_parser)]
         /// gzip compression level
         compression_level: Option<usize>,
+
+        #[clap(short, long, value_parser)]
+        /// Allow invalid nucleotides in output
+        allow_invalid: bool,
     },
 
     /// Creates the Reverse complement for a provided fastx
@@ -195,8 +203,9 @@ fn main() -> Result<()> {
             null,
             num_threads,
             compression_level,
+            allow_invalid,
         } => {
-            commands::unique::run(&input, output, null, num_threads, compression_level)?;
+            commands::unique::run(&input, output, null, num_threads, compression_level, allow_invalid)?;
         }
         Commands::SgrnaTable {
             input,
@@ -212,8 +221,9 @@ fn main() -> Result<()> {
             output,
             num_threads,
             compression_level,
+            allow_invalid,
         } => {
-            commands::upper::run(&input, output, num_threads, compression_level)?;
+            commands::upper::run(&input, output, num_threads, compression_level, allow_invalid)?;
         }
         Commands::Reverse {
             input,
