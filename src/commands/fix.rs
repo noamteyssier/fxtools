@@ -41,7 +41,7 @@ pub fn run(
 
 #[cfg(test)]
 mod test {
-    use super::{format_print, match_output_stream, write_mut_output_with_invalid};
+    use super::{format_print, write_mut_output_with_invalid};
     use fxread::{FastaReader, FastqReader, FastxRead, Record};
     use std::fs::File;
 
