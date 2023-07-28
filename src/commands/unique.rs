@@ -1,5 +1,5 @@
 use anyhow::Result;
-use fxread::{initialize_reader, FastxRead, Record, initialize_stdin_reader};
+use fxread::{initialize_reader, initialize_stdin_reader, FastxRead, Record};
 use spinoff::{Color, Spinner, Spinners, Streams};
 use std::{collections::HashMap, io::stdin};
 

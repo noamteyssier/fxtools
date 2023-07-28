@@ -2,7 +2,7 @@ use std::io::stdin;
 
 use super::match_output_stream;
 use anyhow::Result;
-use fxread::{initialize_reader, FastxRead, Record, initialize_stdin_reader};
+use fxread::{initialize_reader, initialize_stdin_reader, FastxRead, Record};
 
 fn write_pair<W>(writer_r1: &mut W, writer_r2: &mut W, records: &[(Record, Record)]) -> Result<()>
 where

@@ -249,13 +249,7 @@ fn main() -> Result<()> {
             compression_level,
             allow_invalid,
         } => {
-            commands::upper::run(
-                input,
-                output,
-                num_threads,
-                compression_level,
-                allow_invalid,
-            )?;
+            commands::upper::run(input, output, num_threads, compression_level, allow_invalid)?;
         }
         Commands::Reverse {
             input,

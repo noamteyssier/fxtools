@@ -1,7 +1,11 @@
-use std::{borrow::Borrow, io::{Write, stdin}, str::from_utf8};
+use std::{
+    borrow::Borrow,
+    io::{stdin, Write},
+    str::from_utf8,
+};
 
 use anyhow::Result;
-use fxread::{initialize_reader, Record, initialize_stdin_reader};
+use fxread::{initialize_reader, initialize_stdin_reader, Record};
 use memchr::memmem;
 use spinoff::{Color, Spinner, Spinners, Streams};
 

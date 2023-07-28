@@ -1,10 +1,10 @@
 use anyhow::Result;
-use fxread::{FastxRead, Record, initialize_reader, initialize_stdin_reader};
+use fxread::{initialize_reader, initialize_stdin_reader, FastxRead, Record};
 use spinoff::{Color, Spinner, Spinners, Streams};
 use std::{
     collections::HashMap,
     fs::File,
-    io::{stdout, Write, stdin},
+    io::{stdin, stdout, Write},
     str::from_utf8,
 };
 

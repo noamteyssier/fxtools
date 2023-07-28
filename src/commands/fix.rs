@@ -2,7 +2,7 @@ use std::io::stdin;
 
 use super::{match_output_stream, write_mut_output_with_invalid};
 use anyhow::Result;
-use fxread::{initialize_reader, Record, initialize_stdin_reader};
+use fxread::{initialize_reader, initialize_stdin_reader, Record};
 
 /// Format prints the sequence as uppercase
 fn format_print(record: &mut Record) -> &str {
