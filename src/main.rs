@@ -172,7 +172,7 @@ enum Commands {
         r2: Option<String>,
 
         #[clap(short, long, value_parser)]
-        /// Prefix to write sorted files to 
+        /// Prefix to write sorted files to
         /// if single-end [default: stdout]
         /// if paired-end [default: sorted]
         prefix: Option<String>,
