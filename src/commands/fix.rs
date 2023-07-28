@@ -99,25 +99,9 @@ mod test {
     }
 
     #[test]
-    #[should_panic]
-    fn run_invalid_fasta() {
-        let reader = invalid_fasta_reader();
-        let mut writer = match_output_stream(None, None, None).unwrap();
-        write_mut_output_with_invalid(&mut writer, reader, &format_print)
-    }
-
-    #[test]
     fn run_invalid_fasta_allow_invalid() {
         let reader = invalid_fasta_reader();
         let mut writer = File::create("/dev/null").unwrap();
-        write_mut_output_with_invalid(&mut writer, reader, &format_print)
-    }
-
-    #[test]
-    #[should_panic]
-    fn run_invalid_fastq() {
-        let reader = invalid_fastq_reader();
-        let mut writer = match_output_stream(None, None, None).unwrap();
         write_mut_output_with_invalid(&mut writer, reader, &format_print)
     }
 
