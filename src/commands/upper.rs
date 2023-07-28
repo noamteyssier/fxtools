@@ -1,4 +1,7 @@
-use super::{match_output_stream, io::{write_mut_output, write_mut_output_with_invalid}};
+use super::{
+    io::{write_mut_output, write_mut_output_with_invalid},
+    match_output_stream,
+};
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
 use std::str::from_utf8;
@@ -27,7 +30,13 @@ fn format_print(record: &mut Record) -> String {
 }
 
 /// Runs uppercase
-pub fn run(input: &str, output: Option<String>, num_threads: Option<usize>, compression_level: Option<usize>, allow_invalid: bool) -> Result<()> {
+pub fn run(
+    input: &str,
+    output: Option<String>,
+    num_threads: Option<usize>,
+    compression_level: Option<usize>,
+    allow_invalid: bool,
+) -> Result<()> {
     let reader = initialize_reader(input)?;
     let mut writer = match_output_stream(output, num_threads, compression_level)?;
     if allow_invalid {
@@ -40,10 +49,10 @@ pub fn run(input: &str, output: Option<String>, num_threads: Option<usize>, comp
 
 #[cfg(test)]
 mod test {
-    use std::fs::File;
-    use crate::commands::io::write_mut_output_with_invalid;
     use super::{format_print, match_output_stream, write_mut_output};
+    use crate::commands::io::write_mut_output_with_invalid;
     use fxread::{FastaReader, FastqReader, FastxRead, Record};
+    use std::fs::File;
 
     fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
         let sequence: &'static [u8] =

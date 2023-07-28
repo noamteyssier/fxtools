@@ -142,7 +142,15 @@ pub fn run(
     compression_level: Option<usize>,
 ) -> Result<()> {
     if let Some(r2) = r2 {
-        sort_paired_end(input, &r2, prefix, gzip, sort_by_r1, num_threads, compression_level)
+        sort_paired_end(
+            input,
+            &r2,
+            prefix,
+            gzip,
+            sort_by_r1,
+            num_threads,
+            compression_level,
+        )
     } else {
         sort_single_end(input, prefix, gzip, num_threads, compression_level)
     }

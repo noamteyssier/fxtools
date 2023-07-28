@@ -1,4 +1,4 @@
-use super::{match_output_stream, io::write_mut_output};
+use super::{io::write_mut_output, match_output_stream};
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
 use std::str::from_utf8;
@@ -27,7 +27,12 @@ fn format_print(record: &mut Record) -> String {
 }
 
 /// Runs reverse
-pub fn run(input: &str, output: Option<String>, num_threads: Option<usize>, compression_level: Option<usize>) -> Result<()> {
+pub fn run(
+    input: &str,
+    output: Option<String>,
+    num_threads: Option<usize>,
+    compression_level: Option<usize>,
+) -> Result<()> {
     let reader = initialize_reader(input)?;
     let mut writer = match_output_stream(output, num_threads, compression_level)?;
     write_mut_output(&mut writer, reader, &format_print);
