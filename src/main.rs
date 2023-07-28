@@ -191,6 +191,25 @@ enum Commands {
         /// gzip compression level
         compression_level: Option<usize>,
     },
+
+    /// Fix a fastx file by replacing invalid characters with N
+    Fix {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to fix
+        input: String,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>,
+
+        #[clap(short = 'j', long, value_parser)]
+        /// Number of threads to use in gzip compression
+        num_threads: Option<usize>,
+
+        #[clap(short = 'Z', long, value_parser)]
+        /// gzip compression level
+        compression_level: Option<usize>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -298,6 +317,14 @@ fn main() -> Result<()> {
                 num_threads,
                 compression_level,
             )?;
+        },
+        Commands::Fix {
+            input,
+            output,
+            num_threads,
+            compression_level,
+        } => {
+            commands::fix::run(&input, output, num_threads, compression_level)?;
         }
     };
 
