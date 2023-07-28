@@ -1,29 +1,11 @@
 use super::{match_output_stream, write_mut_output, write_mut_output_with_invalid};
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
-use std::str::from_utf8;
 
 /// Format prints the sequence as uppercase
-fn format_print(record: &mut Record) -> String {
+fn format_print(record: &mut Record) -> &str {
     record.upper();
-    match record.qual() {
-        Some(_) => {
-            format!(
-                "@{}\n{}\n{}\n{}\n",
-                from_utf8(record.id()).expect("invalid utf8"),
-                from_utf8(record.seq()).expect("invalid utf8"),
-                from_utf8(record.plus().unwrap()).expect("invalid utf8"),
-                from_utf8(record.qual().unwrap()).expect("invalid utf8"),
-            )
-        }
-        None => {
-            format!(
-                ">{}\n{}\n",
-                from_utf8(record.id()).expect("invalid utf8"),
-                from_utf8(record.seq()).expect("invalid utf8")
-            )
-        }
-    }
+    record.as_str()
 }
 
 /// Runs uppercase
@@ -76,15 +58,17 @@ mod test {
     #[test]
     fn run_fasta() {
         let mut reader = fasta_reader();
-        let upper = reader.next().map(|ref mut x| format_print(x));
-        assert_eq!(upper, Some(">ap2s1_asjdajsdas\nACT\n".to_string()));
+        let mut record = reader.next().unwrap();
+        let upper = format_print(&mut record);
+        assert_eq!(upper, ">ap2s1_asjdajsdas\nACT\n");
     }
 
     #[test]
     fn run_fastq() {
         let mut reader = fastq_reader();
-        let upper = reader.next().map(|ref mut x| format_print(x));
-        assert_eq!(upper, Some("@ap2s1_asjdajsdas\nACT\n+\n123\n".to_string()));
+        let mut record = reader.next().unwrap();
+        let upper = format_print(&mut record);
+        assert_eq!(upper, "@ap2s1_asjdajsdas\nACT\n+\n123\n");
     }
 
     #[test]

@@ -2,7 +2,6 @@ use anyhow::Result;
 use fxread::{initialize_reader, FastxRead, Record};
 use spinoff::{Color, Spinner, Spinners, Streams};
 use std::collections::HashMap;
-use std::str::from_utf8;
 
 use super::{match_output_stream, write_output, write_output_with_invalid};
 
@@ -103,25 +102,8 @@ impl Unique {
 }
 
 /// Format Prints the record for standard fasta/fastq output
-fn format_print(record: &Record) -> String {
-    match record.qual() {
-        Some(_) => {
-            format!(
-                "@{}\n{}\n{}\n{}\n",
-                from_utf8(record.id()).expect("invalid utf8"),
-                from_utf8(record.seq()).expect("invalid utf8"),
-                from_utf8(record.plus().unwrap()).expect("invalid utf8"),
-                from_utf8(record.qual().unwrap()).expect("invalid utf8"),
-            )
-        }
-        None => {
-            format!(
-                ">{}\n{}\n",
-                from_utf8(record.id()).expect("invalid utf8"),
-                from_utf8(record.seq()).expect("invalid utf8")
-            )
-        }
-    }
+fn format_print(record: &Record) -> &str {
+    record.as_str()
 }
 
 pub fn run(
