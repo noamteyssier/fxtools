@@ -62,10 +62,7 @@ mod test {
         let mut reader = fastq_reader();
         let mut record = reader.next().unwrap();
         let nochange = format_print(&mut record);
-        assert_eq!(
-            nochange,
-            "@ap2s1_asjdajsdas\nact\n+\n123\n"
-        );
+        assert_eq!(nochange, "@ap2s1_asjdajsdas\nact\n+\n123\n");
     }
 
     #[test]
