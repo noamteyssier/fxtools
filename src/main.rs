@@ -16,7 +16,7 @@ enum Commands {
     Unique {
         #[clap(short, long, value_parser)]
         /// Input FASTA/Q to Filter on Unique / Duplicate Sequences
-        input: String,
+        input: Option<String>,
 
         #[clap(short, long, value_parser)]
         /// Filepath to write unique records to [default: stdout]
@@ -43,7 +43,7 @@ enum Commands {
     SgrnaTable {
         #[clap(short, long, value_parser)]
         /// Input FASTA/Q to Generate table
-        input: String,
+        input: Option<String>,
 
         #[clap(short, long, value_parser)]
         /// Filepath to write table to [default: stdout]
@@ -68,7 +68,7 @@ enum Commands {
     Upper {
         #[clap(short, long, value_parser)]
         /// Input FASTA/Q to Convert to Upper
-        input: String,
+        input: Option<String>,
 
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
@@ -91,7 +91,7 @@ enum Commands {
     Reverse {
         #[clap(short, long, value_parser)]
         /// Input FASTA/Q to Convert to Upper
-        input: String,
+        input: Option<String>,
 
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
@@ -138,7 +138,7 @@ enum Commands {
     Trim {
         #[clap(short, long, value_parser)]
         /// Input FASTA/Q to trim sequences
-        input: String,
+        input: Option<String>,
 
         #[clap(short, long, value_parser)]
         /// Adapater sequence to trim
@@ -165,7 +165,7 @@ enum Commands {
     Sort {
         #[clap(short = 'i', long, value_parser)]
         /// Input FASTA/Q to sort
-        r1: String,
+        r1: Option<String>,
 
         #[clap(short = 'I', long, value_parser)]
         /// Optional choice of R2 to sort by
@@ -196,7 +196,7 @@ enum Commands {
     Fix {
         #[clap(short, long, value_parser)]
         /// Input FASTA/Q to fix
-        input: String,
+        input: Option<String>,
 
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
@@ -225,7 +225,7 @@ fn main() -> Result<()> {
             allow_invalid,
         } => {
             commands::unique::run(
-                &input,
+                input,
                 output,
                 null,
                 num_threads,
@@ -240,7 +240,7 @@ fn main() -> Result<()> {
             delim,
             reorder,
         } => {
-            commands::sgrna_table::run(&input, output, include_sequence, delim, reorder)?;
+            commands::sgrna_table::run(input, output, include_sequence, delim, reorder)?;
         }
         Commands::Upper {
             input,
@@ -250,7 +250,7 @@ fn main() -> Result<()> {
             allow_invalid,
         } => {
             commands::upper::run(
-                &input,
+                input,
                 output,
                 num_threads,
                 compression_level,
@@ -263,7 +263,7 @@ fn main() -> Result<()> {
             num_threads,
             compression_level,
         } => {
-            commands::reverse::run(&input, output, num_threads, compression_level)?;
+            commands::reverse::run(input, output, num_threads, compression_level)?;
         }
         Commands::ExtractVariable {
             input,
@@ -291,7 +291,7 @@ fn main() -> Result<()> {
             compression_level,
         } => {
             commands::trim::run(
-                &input,
+                input,
                 &adapter,
                 output,
                 trim_adapter,
@@ -309,7 +309,7 @@ fn main() -> Result<()> {
             compression_level,
         } => {
             commands::sort::run(
-                &r1,
+                r1,
                 r2,
                 &prefix,
                 gzip,
@@ -324,7 +324,7 @@ fn main() -> Result<()> {
             num_threads,
             compression_level,
         } => {
-            commands::fix::run(&input, output, num_threads, compression_level)?;
+            commands::fix::run(input, output, num_threads, compression_level)?;
         }
     };
 
