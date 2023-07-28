@@ -1,11 +1,11 @@
-use super::{match_output_stream, write_mut_output, write_mut_output_with_invalid};
+use super::{match_output_stream, write_mut_output};
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
 use std::str::from_utf8;
 
 /// Format prints the sequence as uppercase
 fn format_print(record: &mut Record) -> String {
-    record.upper();
+    record.fix();
     match record.qual() {
         Some(_) => {
             format!(
@@ -32,15 +32,10 @@ pub fn run(
     output: Option<String>,
     num_threads: Option<usize>,
     compression_level: Option<usize>,
-    allow_invalid: bool,
 ) -> Result<()> {
     let reader = initialize_reader(input)?;
     let mut writer = match_output_stream(output, num_threads, compression_level)?;
-    if allow_invalid {
-        write_mut_output_with_invalid(&mut writer, reader, &format_print);
-    } else {
-        write_mut_output(&mut writer, reader, &format_print);
-    }
+    write_mut_output(&mut writer, reader, &format_print);
     Ok(())
 }
 
@@ -74,17 +69,34 @@ mod test {
     }
 
     #[test]
-    fn run_fasta() {
+    fn run_fasta_nochange() {
         let mut reader = fasta_reader();
-        let upper = reader.next().map(|ref mut x| format_print(x));
-        assert_eq!(upper, Some(">ap2s1_asjdajsdas\nACT\n".to_string()));
+        let nochange = reader.next().map(|ref mut x| format_print(x));
+        assert_eq!(nochange, Some(">ap2s1_asjdajsdas\nact\n".to_string()));
+    }
+
+    #[test]
+    fn run_fastq_nochange() {
+        let mut reader = fastq_reader();
+        let nochange = reader.next().map(|ref mut x| format_print(x));
+        assert_eq!(
+            nochange,
+            Some("@ap2s1_asjdajsdas\nact\n+\n123\n".to_string())
+        );
+    }
+
+    #[test]
+    fn run_fasta() {
+        let mut reader = invalid_fasta_reader();
+        let fixed = reader.next().map(|ref mut x| format_print(x));
+        assert_eq!(fixed, Some(">ap2s1_asjdajsdas\nNNN\n".to_string()));
     }
 
     #[test]
     fn run_fastq() {
-        let mut reader = fastq_reader();
+        let mut reader = invalid_fastq_reader();
         let upper = reader.next().map(|ref mut x| format_print(x));
-        assert_eq!(upper, Some("@ap2s1_asjdajsdas\nACT\n+\n123\n".to_string()));
+        assert_eq!(upper, Some("@ap2s1_asjdajsdas\nNNN\n+\n123\n".to_string()));
     }
 
     #[test]

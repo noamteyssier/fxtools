@@ -6,6 +6,7 @@
 
 # Tools
 - [sort](./tools/sort.md)
+- [fix](./tools/fix.md)
 - [trim](./tools/trim.md)
 - [upper](./tools/upper.md)
 - [reverse](./tools/reverse.md)
