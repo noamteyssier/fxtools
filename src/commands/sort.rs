@@ -1,36 +1,14 @@
-use std::str::from_utf8;
-
 use super::match_output_stream;
 use anyhow::Result;
 use fxread::{initialize_reader, FastxRead, Record};
-
-fn prepare_record(record: &Record) -> String {
-    if let Some(_) = record.qual() {
-        format!(
-            "@{}\n{}\n{}\n{}\n",
-            from_utf8(record.id()).expect("invalid utf8"),
-            from_utf8(record.seq()).expect("invalid utf8"),
-            from_utf8(record.plus().unwrap()).expect("invalid utf8"),
-            from_utf8(record.qual().unwrap()).expect("invalid utf8"),
-        )
-    } else {
-        format!(
-            ">{}\n{}\n",
-            from_utf8(record.id()).expect("invalid utf8"),
-            from_utf8(record.seq()).expect("invalid utf8"),
-        )
-    }
-}
 
 fn write_pair<W>(writer_r1: &mut W, writer_r2: &mut W, records: &[(Record, Record)]) -> Result<()>
 where
     W: std::io::Write,
 {
     for (r1, r2) in records {
-        let rec1 = prepare_record(r1);
-        let rec2 = prepare_record(r2);
-        write!(writer_r1, "{}", rec1)?;
-        write!(writer_r2, "{}", rec2)?;
+        write!(writer_r1, "{}", r1.as_str())?;
+        write!(writer_r2, "{}", r2.as_str())?;
     }
     Ok(())
 }
@@ -125,8 +103,7 @@ fn sort_single_end(
 
     // Write sorted records
     for record in records {
-        let rec = prepare_record(&record);
-        write!(writer, "{}", rec)?;
+        write!(writer, "{}", record.as_str())?;
     }
 
     Ok(())

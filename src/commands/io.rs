@@ -35,7 +35,7 @@ pub fn match_output_stream(
 }
 
 /// Writes to the output stream with a provided closure
-pub fn write_output<W, I, R>(writer: &mut W, reader: I, f: &dyn Fn(&Record) -> String)
+pub fn write_output<W, I, R>(writer: &mut W, reader: I, f: &dyn Fn(&Record) -> &str)
 where
     W: Write,
     I: Iterator<Item = R>,
@@ -52,7 +52,7 @@ where
 }
 
 /// Writes to the output stream with a provided closure that mutates the record
-pub fn write_mut_output<W, I, R>(writer: &mut W, reader: I, f: &dyn Fn(&mut Record) -> String)
+pub fn write_mut_output<W, I, R>(writer: &mut W, reader: I, f: &dyn Fn(&mut Record) -> &str)
 where
     W: Write,
     I: Iterator<Item = R>,
@@ -70,7 +70,7 @@ where
 
 /// Writes to the output stream with a provided closure
 /// but does not check for valid nucleotides
-pub fn write_output_with_invalid<W, I, R>(writer: &mut W, reader: I, f: &dyn Fn(&Record) -> String)
+pub fn write_output_with_invalid<W, I, R>(writer: &mut W, reader: I, f: &dyn Fn(&Record) -> &str)
 where
     W: Write,
     I: Iterator<Item = R>,
@@ -86,7 +86,7 @@ where
 pub fn write_mut_output_with_invalid<W, I, R>(
     writer: &mut W,
     reader: I,
-    f: &dyn Fn(&mut Record) -> String,
+    f: &dyn Fn(&mut Record) -> &str,
 ) where
     W: Write,
     I: Iterator<Item = R>,

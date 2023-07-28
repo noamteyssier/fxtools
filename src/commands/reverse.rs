@@ -1,29 +1,11 @@
 use super::{match_output_stream, write_mut_output};
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
-use std::str::from_utf8;
 
 /// Reverse complement sequence and create a string representation of the record
-fn format_print(record: &mut Record) -> String {
+fn format_print(record: &mut Record) -> &str {
     record.rev_comp();
-    match record.qual() {
-        Some(_) => {
-            format!(
-                "@{}\n{}\n{}\n{}\n",
-                from_utf8(record.id()).expect("invalid utf8"),
-                from_utf8(record.seq()).expect("invalid utf8"),
-                from_utf8(record.plus().unwrap()).expect("invalid utf8"),
-                from_utf8(record.qual().unwrap()).expect("invalid utf8"),
-            )
-        }
-        None => {
-            format!(
-                ">{}\n{}\n",
-                from_utf8(record.id()).expect("invalid utf8"),
-                from_utf8(record.seq()).expect("invalid utf8")
-            )
-        }
-    }
+    record.as_str()
 }
 
 /// Runs reverse
@@ -69,15 +51,17 @@ mod test {
     #[test]
     fn run_fasta() {
         let mut reader = fasta_reader();
-        let rev = reader.next().map(|ref mut x| format_print(x));
-        assert_eq!(rev, Some(">ap2s1_asjdajsdas\nagt\n".to_string()));
+        let mut record = reader.next().unwrap();
+        let rev = format_print(&mut record);
+        assert_eq!(rev, ">ap2s1_asjdajsdas\nagt\n");
     }
 
     #[test]
     fn run_fastq() {
         let mut reader = fastq_reader();
-        let rev = reader.next().map(|ref mut x| format_print(x));
-        assert_eq!(rev, Some("@ap2s1_asjdajsdas\nagt\n+\n321\n".to_string()));
+        let mut record = reader.next().unwrap();
+        let rev = format_print(&mut record);
+        assert_eq!(rev, "@ap2s1_asjdajsdas\nagt\n+\n321\n");
     }
 
     #[test]
