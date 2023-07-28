@@ -17,6 +17,9 @@ appropriately.
 All subcommands within the tool are documented here, but
 should be usable and understandable from their help menus.
 
+`fxtools` has been written with the unix-philosophy in mind
+and most functions can be used with standard CLI piping.
+
 ## Contributions
 
 Contributions are very welcome - if you have something in mind
