@@ -1,4 +1,4 @@
-use super::{match_output_stream, write_mut_output};
+use super::{match_output_stream, write_mut_output_with_invalid};
 use anyhow::Result;
 use fxread::{initialize_reader, Record};
 use std::str::from_utf8;
@@ -35,14 +35,13 @@ pub fn run(
 ) -> Result<()> {
     let reader = initialize_reader(input)?;
     let mut writer = match_output_stream(output, num_threads, compression_level)?;
-    write_mut_output(&mut writer, reader, &format_print);
+    write_mut_output_with_invalid(&mut writer, reader, &format_print);
     Ok(())
 }
 
 #[cfg(test)]
 mod test {
-    use super::{format_print, match_output_stream, write_mut_output};
-    use crate::commands::io::write_mut_output_with_invalid;
+    use super::{format_print, match_output_stream, write_mut_output_with_invalid};
     use fxread::{FastaReader, FastqReader, FastxRead, Record};
     use std::fs::File;
 
@@ -104,7 +103,7 @@ mod test {
     fn run_invalid_fasta() {
         let reader = invalid_fasta_reader();
         let mut writer = match_output_stream(None, None, None).unwrap();
-        write_mut_output(&mut writer, reader, &format_print)
+        write_mut_output_with_invalid(&mut writer, reader, &format_print)
     }
 
     #[test]
@@ -119,7 +118,7 @@ mod test {
     fn run_invalid_fastq() {
         let reader = invalid_fastq_reader();
         let mut writer = match_output_stream(None, None, None).unwrap();
-        write_mut_output(&mut writer, reader, &format_print)
+        write_mut_output_with_invalid(&mut writer, reader, &format_print)
     }
 
     #[test]
