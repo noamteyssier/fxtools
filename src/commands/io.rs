@@ -3,7 +3,7 @@ use fxread::Record;
 use gzp::Compression;
 use gzp::deflate::Gzip;
 use gzp::par::compress::{ParCompress, ParCompressBuilder};
-use std::borrow::Borrow;
+use std::borrow::{Borrow, BorrowMut};
 use std::io::Write;
 use std::{fs::File, io::stdout, str::from_utf8};
 
@@ -53,6 +53,23 @@ where
     });
 }
 
+/// Writes to the output stream with a provided closure that mutates the record
+pub fn write_mut_output<W, I, R>(writer: &mut W, reader: I, f: &dyn Fn(&mut Record) -> String)
+where
+    W: Write,
+    I: Iterator<Item = R>,
+    R: BorrowMut<Record>,
+{
+    reader.for_each(|mut x| {
+        assert!(
+            x.borrow().valid(),
+            "Invalid Nucleotides in record: {}",
+            from_utf8(x.borrow().id()).expect("invalid utf8")
+        );
+        write!(writer, "{}", f(x.borrow_mut())).expect("Error Writing to File");
+    });
+}
+
 /// Writes to the output stream with a provided closure
 /// but does not check for valid nucleotides
 pub fn write_output_with_invalid<W, I, R>(writer: &mut W, reader: I, f: &dyn Fn(&Record) -> String)
@@ -63,5 +80,21 @@ where
 {
     reader.for_each(|x| {
         write!(writer, "{}", f(x.borrow())).expect("Error Writing to File");
+    });
+}
+
+/// Writes to the output stream with a provided closure that mutates the record
+/// but does not check for valid nucleotides
+pub fn write_mut_output_with_invalid<W, I, R>(
+    writer: &mut W,
+    reader: I,
+    f: &dyn Fn(&mut Record) -> String,
+) where
+    W: Write,
+    I: Iterator<Item = R>,
+    R: BorrowMut<Record>,
+{
+    reader.for_each(|mut x| {
+        write!(writer, "{}", f(x.borrow_mut())).expect("Error Writing to File");
     });
 }
