@@ -4,7 +4,7 @@ use spinoff::{Color, Spinner, Spinners, Streams};
 use std::collections::HashMap;
 use std::str::from_utf8;
 
-use super::{match_output_stream, write_output};
+use super::{match_output_stream, write_output, io::write_output_with_invalid};
 
 type UniqMap = HashMap<Vec<u8>, Record>;
 type NullMap = HashMap<Vec<u8>, Vec<Record>>;
@@ -130,6 +130,7 @@ pub fn run(
     null: Option<String>,
     num_threads: Option<usize>,
     compression_level: Option<usize>,
+    allow_invalid: bool,
 ) -> Result<()> {
     let reader = initialize_reader(path)?;
 
@@ -152,20 +153,36 @@ pub fn run(
 
     // write unique sequences
     let mut unique_writer = match_output_stream(output, num_threads, compression_level)?;
-    write_output(
-        &mut unique_writer,
-        Box::new(unique.passing_records()),
-        &format_print,
-    );
+    if allow_invalid {
+        write_output_with_invalid(
+            &mut unique_writer,
+            Box::new(unique.passing_records()),
+            &format_print,
+        );
+    } else {
+        write_output(
+            &mut unique_writer,
+            Box::new(unique.passing_records()),
+            &format_print,
+        );
+    }
 
     // write null sequences if required
     if null.is_some() {
         let mut null_writer = match_output_stream(null, num_threads, compression_level)?;
-        write_output(
-            &mut null_writer,
-            Box::new(unique.null_records()),
-            &format_print,
-        );
+        if allow_invalid {
+            write_output_with_invalid(
+                &mut null_writer,
+                Box::new(unique.null_records()),
+                &format_print,
+            );
+        } else {
+            write_output(
+                &mut null_writer,
+                Box::new(unique.null_records()),
+                &format_print,
+            );
+        }
     }
     Ok(())
 }

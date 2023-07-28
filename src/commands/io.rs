@@ -52,3 +52,16 @@ where
         write!(writer, "{}", f(x.borrow())).expect("Error Writing to File");
     });
 }
+
+/// Writes to the output stream with a provided closure
+/// but does not check for valid nucleotides
+pub fn write_output_with_invalid<W, I, R>(writer: &mut W, reader: I, f: &dyn Fn(&Record) -> String)
+where
+    W: Write,
+    I: Iterator<Item = R>,
+    R: Borrow<Record>,
+{
+    reader.for_each(|x| {
+        write!(writer, "{}", f(x.borrow())).expect("Error Writing to File");
+    });
+}
