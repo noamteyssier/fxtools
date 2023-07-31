@@ -1,10 +1,9 @@
-use std::io::stdin;
+use super::match_output_stream;
 use anyhow::Result;
 use fxread::{initialize_reader, initialize_stdin_reader, Record};
-use super::match_output_stream;
+use std::io::stdin;
 
 fn get_line(record: &Record, symbol: bool, dot_version: bool) -> String {
-
     // select the id
     let id = record.id_str();
 
@@ -16,10 +15,14 @@ fn get_line(record: &Record, symbol: bool, dot_version: bool) -> String {
 
     // get the gene id
     let gene_id = if dot_version {
-        attributes.next().expect("No gene id")
+        attributes
+            .next()
+            .expect("No gene id")
             .replace("gene_id:", "")
     } else {
-        attributes.next().expect("No gene id")
+        attributes
+            .next()
+            .expect("No gene id")
             .split(".")
             .nth(0)
             .expect("No gene id")
@@ -28,7 +31,9 @@ fn get_line(record: &Record, symbol: bool, dot_version: bool) -> String {
 
     // get the gene symbol if requested
     if symbol {
-        let gene_symbol = attributes.next().expect("No gene symbol")
+        let gene_symbol = attributes
+            .next()
+            .expect("No gene symbol")
             .replace("gene_name:", "");
 
         // if the gene symbol is empty, just return the transcript and gene id
@@ -43,7 +48,6 @@ fn get_line(record: &Record, symbol: bool, dot_version: bool) -> String {
         format!("{}\t{}\n", transcript_id, gene_id)
     }
 }
-
 
 pub fn run(
     input: Option<String>,
@@ -69,19 +73,16 @@ pub fn run(
 
 #[cfg(test)]
 mod testing {
-    use fxread::{FastxRead, Record, FastaReader};
     use super::*;
+    use fxread::{FastaReader, FastxRead, Record};
 
-    
     fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
-        let sequence: &'static [u8] = 
-            b">ENST00000003583.12 gene_id:ENSG00000001460.18 gene_name:STPG1 transcript_name:STPG1-201 chr:1 start:24357005 end:24413725 strand:-\nACTACTACT";
+        let sequence: &'static [u8] = b">ENST00000003583.12 gene_id:ENSG00000001460.18 gene_name:STPG1 transcript_name:STPG1-201 chr:1 start:24357005 end:24413725 strand:-\nACTACTACT";
         Box::new(FastaReader::new(sequence))
     }
 
     fn fasta_missing_symbol() -> Box<dyn FastxRead<Item = Record>> {
-        let sequence: &'static [u8] = 
-            b">ENST00000003583.12 gene_id:ENSG00000001460.18 gene_name: transcript_name:STPG1-201 chr:1 start:24357005 end:24413725 strand:-\nACTACTACT";
+        let sequence: &'static [u8] = b">ENST00000003583.12 gene_id:ENSG00000001460.18 gene_name: transcript_name:STPG1-201 chr:1 start:24357005 end:24413725 strand:-\nACTACTACT";
         Box::new(FastaReader::new(sequence))
     }
 
@@ -124,5 +125,4 @@ mod testing {
         let line = get_line(&record, true, true);
         assert_eq!(line, "ENST00000003583.12\tENSG00000001460.18\n");
     }
-
 }

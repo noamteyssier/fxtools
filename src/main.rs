@@ -359,7 +359,14 @@ fn main() -> Result<()> {
             num_threads,
             compression_level,
         } => {
-            commands::t2g::run(input, output, symbol, dot_version, num_threads, compression_level)?;
+            commands::t2g::run(
+                input,
+                output,
+                symbol,
+                dot_version,
+                num_threads,
+                compression_level,
+            )?;
         }
     };
 
