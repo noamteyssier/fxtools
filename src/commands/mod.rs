@@ -4,6 +4,7 @@ pub mod io;
 pub mod reverse;
 pub mod sgrna_table;
 pub mod sort;
+pub mod t2g;
 pub mod trim;
 pub mod unique;
 pub mod upper;
