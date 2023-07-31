@@ -212,6 +212,35 @@ enum Commands {
         /// gzip compression level
         compression_level: Option<usize>,
     },
+
+    /// Extracts the transcript to gene mapping from an ensembl cdna fasta file
+    T2g {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to fix
+        input: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>,
+
+        #[clap(short, long)]
+        /// Whether to include the gene symbol in the output if available.
+        /// Defaults to ensembl gene id
+        symbol: bool,
+
+        #[clap(short, long)]
+        /// Whether to include the dot version of the transcript id
+        /// Defaults to clipping the dot version
+        dot_version: bool,
+
+        #[clap(short = 'j', long, value_parser)]
+        /// Number of threads to use in gzip compression
+        num_threads: Option<usize>,
+
+        #[clap(short = 'Z', long, value_parser)]
+        /// gzip compression level
+        compression_level: Option<usize>,
+    },
 }
 
 fn main() -> Result<()> {
@@ -321,6 +350,23 @@ fn main() -> Result<()> {
             compression_level,
         } => {
             commands::fix::run(input, output, num_threads, compression_level)?;
+        }
+        Commands::T2g {
+            input,
+            output,
+            symbol,
+            dot_version,
+            num_threads,
+            compression_level,
+        } => {
+            commands::t2g::run(
+                input,
+                output,
+                symbol,
+                dot_version,
+                num_threads,
+                compression_level,
+            )?;
         }
     };
 
