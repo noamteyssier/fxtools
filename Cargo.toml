@@ -20,3 +20,4 @@ ndarray = "0.15.6"
 spinoff = "0.5.3"
 memchr = "2.5.0"
 gzp = { version="0.11.3", features=["deflate_rust"], default-features = false }
+regex = "1.9.6"

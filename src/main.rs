@@ -213,6 +213,37 @@ enum Commands {
         compression_level: Option<usize>,
     },
 
+    /// Filters a fastx file by searching for whether they follow a regex pattern on the sequence
+    Filter {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to fix
+        input: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Regex pattern to search for
+        pattern: String,
+
+        #[clap(short = 'v', long, value_parser, default_value = "false")]
+        /// Whether to invert the filter
+        invert: bool,
+
+        #[clap(short = 'H', long, value_parser, default_value = "false")]
+        /// Whether to search for the pattern in the header
+        header: bool,
+
+        #[clap(short = 'j', long, value_parser)]
+        /// Number of threads to use in gzip compression
+        num_threads: Option<usize>,
+
+        #[clap(short = 'Z', long, value_parser)]
+        /// gzip compression level
+        compression_level: Option<usize>,
+    },
+
     /// Extracts the transcript to gene mapping from an ensembl cdna fasta file
     T2g {
         #[clap(short, long, value_parser)]
@@ -350,6 +381,25 @@ fn main() -> Result<()> {
             compression_level,
         } => {
             commands::fix::run(input, output, num_threads, compression_level)?;
+        }
+        Commands::Filter {
+            input,
+            output,
+            pattern,
+            invert,
+            header,
+            num_threads,
+            compression_level,
+        } => {
+            commands::filter::run(
+                input,
+                output,
+                pattern,
+                invert,
+                header,
+                num_threads,
+                compression_level,
+            )?;
         }
         Commands::T2g {
             input,
