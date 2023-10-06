@@ -110,7 +110,7 @@ pub fn run(
     path: Option<String>,
     output: Option<String>,
     null: Option<String>,
-    num_threads: Option<usize>,
+    compression_threads: Option<usize>,
     compression_level: Option<usize>,
     allow_invalid: bool,
 ) -> Result<()> {
@@ -138,7 +138,7 @@ pub fn run(
     );
 
     // write unique sequences
-    let mut unique_writer = match_output_stream(output, num_threads, compression_level)?;
+    let mut unique_writer = match_output_stream(output, compression_threads, compression_level)?;
     if allow_invalid {
         write_output_with_invalid(
             &mut unique_writer,
@@ -155,7 +155,7 @@ pub fn run(
 
     // write null sequences if required
     if null.is_some() {
-        let mut null_writer = match_output_stream(null, num_threads, compression_level)?;
+        let mut null_writer = match_output_stream(null, compression_threads, compression_level)?;
         if allow_invalid {
             write_output_with_invalid(
                 &mut null_writer,

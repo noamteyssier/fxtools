@@ -14,7 +14,7 @@ fn format_print(record: &mut Record) -> &str {
 pub fn run(
     input: Option<String>,
     output: Option<String>,
-    num_threads: Option<usize>,
+    compression_threads: Option<usize>,
     compression_level: Option<usize>,
     allow_invalid: bool,
 ) -> Result<()> {
@@ -23,7 +23,7 @@ pub fn run(
     } else {
         initialize_stdin_reader(stdin().lock())
     }?;
-    let mut writer = match_output_stream(output, num_threads, compression_level)?;
+    let mut writer = match_output_stream(output, compression_threads, compression_level)?;
     if allow_invalid {
         write_mut_output_with_invalid(&mut writer, reader, &format_print);
     } else {

@@ -8,6 +8,14 @@ mod commands;
 struct Cli {
     #[clap(subcommand)]
     command: Commands,
+
+    /// Compression threads to use for output files if applicable
+    #[clap(global = true, short = 'j', long)]
+    pub compression_threads: Option<usize>,
+
+    /// Compression level to use for output files if applicable
+    #[clap(global = true, short = 'Z', long)]
+    pub compression_level: Option<usize>,
 }
 
 #[derive(Subcommand)]
@@ -25,14 +33,6 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write unique records to
         null: Option<String>,
-
-        #[clap(short = 'j', long, value_parser)]
-        /// Number of threads to use in gzip compression
-        num_threads: Option<usize>,
-
-        #[clap(short = 'Z', long, value_parser)]
-        /// gzip compression level
-        compression_level: Option<usize>,
 
         #[clap(short, long, value_parser)]
         /// Allow invalid nucleotides in output
@@ -74,14 +74,6 @@ enum Commands {
         /// Filepath to write output to [default: stdout]
         output: Option<String>,
 
-        #[clap(short = 'j', long, value_parser)]
-        /// Number of threads to use in gzip compression
-        num_threads: Option<usize>,
-
-        #[clap(short = 'Z', long, value_parser)]
-        /// gzip compression level
-        compression_level: Option<usize>,
-
         #[clap(short, long, value_parser)]
         /// Allow invalid nucleotides in output
         allow_invalid: bool,
@@ -96,14 +88,6 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>,
-
-        #[clap(short = 'j', long, value_parser)]
-        /// Number of threads to use in gzip compression
-        num_threads: Option<usize>,
-
-        #[clap(short = 'Z', long, value_parser)]
-        /// gzip compression level
-        compression_level: Option<usize>,
     },
 
     /// Filters same length sequences to their variable region. Useful in CRISPRi/a libraries where
@@ -124,14 +108,6 @@ enum Commands {
         #[clap(short, long, value_parser, default_value = "1.0")]
         /// Number of samples to calculate positional entropy on
         zscore_threshold: f64,
-
-        #[clap(short = 'j', long, value_parser)]
-        /// Number of threads to use in gzip compression
-        num_threads: Option<usize>,
-
-        #[clap(short = 'Z', long, value_parser)]
-        /// gzip compression level
-        compression_level: Option<usize>,
     },
 
     /// Trims adapter sequences that are dynamically placed within the sequence.
@@ -151,14 +127,6 @@ enum Commands {
         #[clap(short, long, value_parser, default_value = "false")]
         /// Trim the adapter off the sequence
         trim_adapter: bool,
-
-        #[clap(short = 'j', long, value_parser)]
-        /// Number of threads to use in gzip compression
-        num_threads: Option<usize>,
-
-        #[clap(short = 'Z', long, value_parser)]
-        /// gzip compression level
-        compression_level: Option<usize>,
     },
 
     /// Sorts a fastx file by sequence
@@ -184,14 +152,6 @@ enum Commands {
         #[clap(short, long, value_parser, default_value = "false")]
         /// Whether to sort by R1 or R2
         sort_by_r1: bool,
-
-        #[clap(short = 'j', long, value_parser)]
-        /// Number of threads to use in gzip compression
-        num_threads: Option<usize>,
-
-        #[clap(short = 'Z', long, value_parser)]
-        /// gzip compression level
-        compression_level: Option<usize>,
     },
 
     /// Fix a fastx file by replacing invalid characters with N
@@ -203,14 +163,6 @@ enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>,
-
-        #[clap(short = 'j', long, value_parser)]
-        /// Number of threads to use in gzip compression
-        num_threads: Option<usize>,
-
-        #[clap(short = 'Z', long, value_parser)]
-        /// gzip compression level
-        compression_level: Option<usize>,
     },
 
     /// Filters a fastx file by searching for whether they follow a regex pattern on the sequence
@@ -234,14 +186,6 @@ enum Commands {
         #[clap(short = 'H', long, value_parser, default_value = "false")]
         /// Whether to search for the pattern in the header
         header: bool,
-
-        #[clap(short = 'j', long, value_parser)]
-        /// Number of threads to use in gzip compression
-        num_threads: Option<usize>,
-
-        #[clap(short = 'Z', long, value_parser)]
-        /// gzip compression level
-        compression_level: Option<usize>,
     },
 
     /// Extracts the transcript to gene mapping from an ensembl cdna fasta file
@@ -263,14 +207,6 @@ enum Commands {
         /// Whether to include the dot version of the transcript id
         /// Defaults to clipping the dot version
         dot_version: bool,
-
-        #[clap(short = 'j', long, value_parser)]
-        /// Number of threads to use in gzip compression
-        num_threads: Option<usize>,
-
-        #[clap(short = 'Z', long, value_parser)]
-        /// gzip compression level
-        compression_level: Option<usize>,
     },
 }
 
@@ -282,16 +218,14 @@ fn main() -> Result<()> {
             input,
             output,
             null,
-            num_threads,
-            compression_level,
             allow_invalid,
         } => {
             commands::unique::run(
                 input,
                 output,
                 null,
-                num_threads,
-                compression_level,
+                cli.compression_threads,
+                cli.compression_level,
                 allow_invalid,
             )?;
         }
@@ -307,35 +241,37 @@ fn main() -> Result<()> {
         Commands::Upper {
             input,
             output,
-            num_threads,
-            compression_level,
             allow_invalid,
         } => {
-            commands::upper::run(input, output, num_threads, compression_level, allow_invalid)?;
+            commands::upper::run(
+                input,
+                output,
+                cli.compression_threads,
+                cli.compression_level,
+                allow_invalid,
+            )?;
         }
-        Commands::Reverse {
-            input,
-            output,
-            num_threads,
-            compression_level,
-        } => {
-            commands::reverse::run(input, output, num_threads, compression_level)?;
+        Commands::Reverse { input, output } => {
+            commands::reverse::run(
+                input,
+                output,
+                cli.compression_threads,
+                cli.compression_level,
+            )?;
         }
         Commands::ExtractVariable {
             input,
             output,
             num_samples,
             zscore_threshold,
-            num_threads,
-            compression_level,
         } => {
             commands::extract::run(
                 &input,
                 output,
                 num_samples,
                 zscore_threshold,
-                num_threads,
-                compression_level,
+                cli.compression_threads,
+                cli.compression_level,
             )?;
         }
         Commands::Trim {
@@ -343,16 +279,14 @@ fn main() -> Result<()> {
             output,
             adapter,
             trim_adapter,
-            num_threads,
-            compression_level,
         } => {
             commands::trim::run(
                 input,
                 &adapter,
                 output,
                 trim_adapter,
-                num_threads,
-                compression_level,
+                cli.compression_threads,
+                cli.compression_level,
             )?;
         }
         Commands::Sort {
@@ -361,8 +295,6 @@ fn main() -> Result<()> {
             prefix,
             gzip,
             sort_by_r1,
-            num_threads,
-            compression_level,
         } => {
             commands::sort::run(
                 r1,
@@ -370,17 +302,17 @@ fn main() -> Result<()> {
                 prefix,
                 gzip,
                 sort_by_r1,
-                num_threads,
-                compression_level,
+                cli.compression_threads,
+                cli.compression_level,
             )?;
         }
-        Commands::Fix {
-            input,
-            output,
-            num_threads,
-            compression_level,
-        } => {
-            commands::fix::run(input, output, num_threads, compression_level)?;
+        Commands::Fix { input, output } => {
+            commands::fix::run(
+                input,
+                output,
+                cli.compression_threads,
+                cli.compression_level,
+            )?;
         }
         Commands::Filter {
             input,
@@ -388,8 +320,6 @@ fn main() -> Result<()> {
             pattern,
             invert,
             header,
-            num_threads,
-            compression_level,
         } => {
             commands::filter::run(
                 input,
@@ -397,8 +327,8 @@ fn main() -> Result<()> {
                 pattern,
                 invert,
                 header,
-                num_threads,
-                compression_level,
+                cli.compression_threads,
+                cli.compression_level,
             )?;
         }
         Commands::T2g {
@@ -406,16 +336,14 @@ fn main() -> Result<()> {
             output,
             symbol,
             dot_version,
-            num_threads,
-            compression_level,
         } => {
             commands::t2g::run(
                 input,
                 output,
                 symbol,
                 dot_version,
-                num_threads,
-                compression_level,
+                cli.compression_threads,
+                cli.compression_level,
             )?;
         }
     };
