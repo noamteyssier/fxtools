@@ -54,7 +54,7 @@ pub fn run(
     output: Option<String>,
     symbol: bool,
     dot_version: bool,
-    num_threads: Option<usize>,
+    compression_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
     let reader = if let Some(path) = input {
@@ -62,7 +62,7 @@ pub fn run(
     } else {
         initialize_stdin_reader(stdin().lock())
     }?;
-    let mut writer = match_output_stream(output, num_threads, compression_level)?;
+    let mut writer = match_output_stream(output, compression_threads, compression_level)?;
     reader
         .map(|x| get_line(&x, symbol, dot_version))
         .for_each(|x| {
