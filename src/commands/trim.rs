@@ -102,7 +102,7 @@ pub fn run(
     adapter: &str,
     output: Option<String>,
     trim_adapter: bool,
-    num_threads: Option<usize>,
+    compression_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
     let reader = if let Some(path) = input {
@@ -111,7 +111,7 @@ pub fn run(
         initialize_stdin_reader(stdin().lock())
     }?;
     let mut trimmer = Trimmer::new(adapter.to_string(), trim_adapter);
-    let mut writer = match_output_stream(output, num_threads, compression_level)?;
+    let mut writer = match_output_stream(output, compression_threads, compression_level)?;
 
     let spinner = Spinner::new_with_stream(
         Spinners::Dots12,

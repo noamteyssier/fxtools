@@ -47,7 +47,7 @@ fn sort_paired_end(
     prefix: &str,
     gzip: bool,
     sort_by_r1: bool,
-    num_threads: Option<usize>,
+    compression_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
     // Determine output paths
@@ -70,8 +70,10 @@ fn sort_paired_end(
     sort_paired_records(&mut records, sort_by_r1);
 
     // Initialize writers
-    let mut writer_r1 = match_output_stream(Some(output_r1), num_threads, compression_level)?;
-    let mut writer_r2 = match_output_stream(Some(output_r2), num_threads, compression_level)?;
+    let mut writer_r1 =
+        match_output_stream(Some(output_r1), compression_threads, compression_level)?;
+    let mut writer_r2 =
+        match_output_stream(Some(output_r2), compression_threads, compression_level)?;
 
     // Write sorted records
     write_pair(&mut writer_r1, &mut writer_r2, &records)
@@ -81,7 +83,7 @@ fn sort_single_end(
     input: Option<String>,
     prefix: Option<String>,
     gzip: bool,
-    num_threads: Option<usize>,
+    compression_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
     // Determine output path
@@ -109,7 +111,7 @@ fn sort_single_end(
     sort_records(&mut records);
 
     // Initialize writer
-    let mut writer = match_output_stream(output_str, num_threads, compression_level)?;
+    let mut writer = match_output_stream(output_str, compression_threads, compression_level)?;
 
     // Write sorted records
     for record in records {
@@ -125,7 +127,7 @@ pub fn run(
     prefix: Option<String>,
     gzip: bool,
     sort_by_r1: bool,
-    num_threads: Option<usize>,
+    compression_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
     if let Some(r2) = r2 {
@@ -144,11 +146,11 @@ pub fn run(
             &prefix_str,
             gzip,
             sort_by_r1,
-            num_threads,
+            compression_threads,
             compression_level,
         )
     } else {
-        sort_single_end(input, prefix, gzip, num_threads, compression_level)
+        sort_single_end(input, prefix, gzip, compression_threads, compression_level)
     }
 }
 

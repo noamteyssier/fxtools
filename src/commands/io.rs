@@ -10,7 +10,7 @@ use std::{fs::File, io::stdout, str::from_utf8};
 /// Matches the output to a writer stream
 pub fn match_output_stream(
     output: Option<String>,
-    num_threads: Option<usize>,
+    compression_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<Box<dyn Write>> {
     match output {
@@ -18,7 +18,7 @@ pub fn match_output_stream(
             if path.ends_with(".gz") {
                 let file = File::create(path)?;
                 let writer: ParCompress<Gzip> = ParCompressBuilder::new()
-                    .num_threads(num_threads.unwrap_or(1))?
+                    .num_threads(compression_threads.unwrap_or(1))?
                     .compression_level(if let Some(level) = compression_level {
                         Compression::new(level as u32)
                     } else {
