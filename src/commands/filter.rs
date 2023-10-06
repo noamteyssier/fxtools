@@ -41,3 +41,116 @@ pub fn run(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use fxread::{FastaReader, FastqReader, FastxRead, Record};
+
+    fn fasta_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] =
+            b">ap2s1_asjdajsdas\nact\n>ap2s1_asdkjasd\nacc\n>ap2s2_aosdjiasj\nact\n";
+        Box::new(FastaReader::new(sequence))
+    }
+
+    fn fastq_reader() -> Box<dyn FastxRead<Item = Record>> {
+        let sequence: &'static [u8] = b"@ap2s1_asjdajsdas\nact\n+\n123\n@ap2s1_asdkjasd\nacc\n+\n123\n@ap2s2_aosdjiasj\nact\n+\n123\n";
+        Box::new(FastqReader::new(sequence))
+    }
+
+    #[test]
+    fn test_fasta_sequence() {
+        let reader = fasta_reader();
+        let regex = Regex::new("act").unwrap();
+        let invert = false;
+        let header = false;
+        let matches = reader
+            .filter(|x| match_regex(x, &regex, invert, header))
+            .count();
+        assert_eq!(matches, 2);
+    }
+
+    #[test]
+    fn test_fasta_header() {
+        let reader = fasta_reader();
+        let regex = Regex::new("ap2s1").unwrap();
+        let invert = false;
+        let header = true;
+        let matches = reader
+            .filter(|x| match_regex(x, &regex, invert, header))
+            .count();
+        assert_eq!(matches, 2);
+    }
+
+    #[test]
+    fn test_fasta_sequence_inverse() {
+        let reader = fasta_reader();
+        let regex = Regex::new("act").unwrap();
+        let invert = true;
+        let header = false;
+        let matches = reader
+            .filter(|x| match_regex(x, &regex, invert, header))
+            .count();
+        assert_eq!(matches, 1);
+    }
+
+    #[test]
+    fn test_fasta_header_inverse() {
+        let reader = fasta_reader();
+        let regex = Regex::new("ap2s1").unwrap();
+        let invert = true;
+        let header = true;
+        let matches = reader
+            .filter(|x| match_regex(x, &regex, invert, header))
+            .count();
+        assert_eq!(matches, 1);
+    }
+
+    #[test]
+    fn test_fastq_sequence() {
+        let reader = fastq_reader();
+        let regex = Regex::new("act").unwrap();
+        let invert = false;
+        let header = false;
+        let matches = reader
+            .filter(|x| match_regex(x, &regex, invert, header))
+            .count();
+        assert_eq!(matches, 2);
+    }
+
+    #[test]
+    fn test_fastq_header() {
+        let reader = fastq_reader();
+        let regex = Regex::new("ap2s1").unwrap();
+        let invert = false;
+        let header = true;
+        let matches = reader
+            .filter(|x| match_regex(x, &regex, invert, header))
+            .count();
+        assert_eq!(matches, 2);
+    }
+
+    #[test]
+    fn test_fastq_sequence_inverse() {
+        let reader = fastq_reader();
+        let regex = Regex::new("act").unwrap();
+        let invert = true;
+        let header = false;
+        let matches = reader
+            .filter(|x| match_regex(x, &regex, invert, header))
+            .count();
+        assert_eq!(matches, 1);
+    }
+
+    #[test]
+    fn test_fastq_header_inverse() {
+        let reader = fastq_reader();
+        let regex = Regex::new("ap2s1").unwrap();
+        let invert = true;
+        let header = true;
+        let matches = reader
+            .filter(|x| match_regex(x, &regex, invert, header))
+            .count();
+        assert_eq!(matches, 1);
+    }
+}
