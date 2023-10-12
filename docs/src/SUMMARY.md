@@ -6,7 +6,10 @@
 ---
 
 # Tools
+
 - [sort](./tools/sort.md)
+- [count](./tools/count.md)
+- [filter](./tools/filter.md)
 - [fix](./tools/fix.md)
 - [trim](./tools/trim.md)
 - [upper](./tools/upper.md)
