@@ -20,6 +20,13 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Counts the number of records in a Fastx file
+    Count {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to Count
+        input: Option<String>,
+    },
+
     /// Filters the Fastx file for Unique Sequences
     Unique {
         #[clap(short, long, value_parser)]
@@ -214,6 +221,9 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::Count { input } => {
+            commands::count::run(input)?;
+        }
         Commands::Unique {
             input,
             output,
