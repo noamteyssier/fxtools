@@ -1,3 +1,4 @@
+pub mod count;
 pub mod extract;
 pub mod filter;
 pub mod fix;
