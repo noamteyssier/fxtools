@@ -42,7 +42,7 @@ enum Commands {
         /// Number of samples to calculate positional entropy on
         num_samples: usize,
 
-        #[clap(short, long, value_parser, default_value = "1.0")]
+        #[clap(short, long, value_parser, default_value = "0.5")]
         /// Number of samples to calculate positional entropy on
         zscore_threshold: f64,
     },
