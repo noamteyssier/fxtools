@@ -16,6 +16,7 @@
 - [sample](./tools/sample.md)
 - [sgrna-table](./tools/sgrna_table.md)
 - [t2g](./tools/t2g.md)
+- [take](./tools/take.md)
 - [trim](./tools/trim.md)
 - [unique](./tools/unique.md)
 - [upper](./tools/upper.md)

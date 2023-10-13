@@ -185,6 +185,25 @@ enum Commands {
         dot_version: bool,
     },
 
+    /// Takes exactly a number of records from an input fastx file
+    Take {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to take records from
+        input: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write taken records to [default: stdout]
+        output: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Number of records to take
+        num_records: usize,
+
+        #[clap(short, long, value_parser, default_value = "0")]
+        /// How many records to skip before taking the first n
+        skip: usize,
+    },
+
     /// Trims adapter sequences that are dynamically placed within the sequence.
     Trim {
         #[clap(short, long, value_parser)]
@@ -349,6 +368,21 @@ fn main() -> Result<()> {
                 output,
                 symbol,
                 dot_version,
+                cli.compression_threads,
+                cli.compression_level,
+            )?;
+        }
+        Commands::Take {
+            input,
+            output,
+            num_records,
+            skip,
+        } => {
+            commands::take::run(
+                input,
+                output,
+                num_records,
+                skip,
                 cli.compression_threads,
                 cli.compression_level,
             )?;
