@@ -136,6 +136,29 @@ enum Commands {
         trim_adapter: bool,
     },
 
+    /// Samples a fastx file by a frequency
+    Sample {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to sample
+        input: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>,
+
+        #[clap(short, long, value_parser, default_value = "0.5")]
+        /// Frequency to sample by
+        frequency: f64,
+
+        #[clap(short, long, value_parser)]
+        /// Seed to use for sampling
+        seed: Option<u64>,
+
+        #[clap(short, long, value_parser, default_value = "false")]
+        /// Don't write number of records sampled to stderr
+        quiet: bool,
+    },
+
     /// Sorts a fastx file by sequence
     Sort {
         #[clap(short = 'i', long, value_parser)]
@@ -223,6 +246,23 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Count { input } => {
             commands::count::run(input)?;
+        }
+        Commands::Sample {
+            input,
+            output,
+            frequency,
+            seed,
+            quiet,
+        } => {
+            commands::sample::run(
+                input,
+                output,
+                frequency,
+                seed,
+                quiet,
+                cli.compression_threads,
+                cli.compression_level,
+            )?;
         }
         Commands::Unique {
             input,
