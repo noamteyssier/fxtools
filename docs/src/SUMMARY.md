@@ -7,6 +7,7 @@
 
 # Tools
 
+- [cat](./tools/cat.md)
 - [count](./tools/count.md)
 - [extract-variable](./tools/extract_variable.md)
 - [filter](./tools/filter.md)
