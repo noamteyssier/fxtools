@@ -20,6 +20,17 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Concatenates multiple Fastx files together
+    Cat {
+        #[clap(short, long, value_parser, multiple = true, required = true)]
+        /// Input FASTX to concatenate
+        inputs: Vec<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>,
+    },
+
     /// Counts the number of records in a Fastx file
     Count {
         #[clap(short, long, value_parser)]
@@ -263,6 +274,14 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::Cat { inputs, output } => {
+            commands::cat::run(
+                inputs,
+                output,
+                cli.compression_threads,
+                cli.compression_level,
+            )?;
+        }
         Commands::Count { input } => {
             commands::count::run(input)?;
         }
