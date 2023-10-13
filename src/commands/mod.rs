@@ -4,6 +4,7 @@ pub mod filter;
 pub mod fix;
 pub mod io;
 pub mod reverse;
+pub mod sample;
 pub mod sgrna_table;
 pub mod sort;
 pub mod t2g;

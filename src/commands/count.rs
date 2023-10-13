@@ -1,7 +1,6 @@
-use std::io::stdin;
-
 use anyhow::Result;
 use fxread::{initialize_reader, initialize_stdin_reader, Record};
+use std::io::stdin;
 
 /// Counts the records
 pub fn count<R: Iterator<Item = Record>>(input: R) -> usize {

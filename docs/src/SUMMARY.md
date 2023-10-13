@@ -7,14 +7,15 @@
 
 # Tools
 
-- [sort](./tools/sort.md)
 - [count](./tools/count.md)
+- [extract-variable](./tools/extract_variable.md)
 - [filter](./tools/filter.md)
 - [fix](./tools/fix.md)
-- [trim](./tools/trim.md)
-- [upper](./tools/upper.md)
+- [sort](./tools/sort.md)
 - [reverse](./tools/reverse.md)
-- [unique](./tools/unique.md)
+- [sample](./tools/sample.md)
 - [sgrna-table](./tools/sgrna_table.md)
-- [extract-variable](./tools/extract_variable.md)
 - [t2g](./tools/t2g.md)
+- [trim](./tools/trim.md)
+- [unique](./tools/unique.md)
+- [upper](./tools/upper.md)
