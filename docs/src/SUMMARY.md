@@ -8,6 +8,7 @@
 # Tools
 
 - [cat](./tools/cat.md)
+- [clip](./tools/clip.md)
 - [count](./tools/count.md)
 - [extract-variable](./tools/extract_variable.md)
 - [filter](./tools/filter.md)
