@@ -38,6 +38,30 @@ enum Commands {
         input: Option<String>,
     },
 
+    /// Clip nucleotide sequences between two indices
+    Clip {
+        #[clap(short, long, value_parser)]
+        /// Input FASTA/Q to clip
+        input: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Number of nucleotides from the start of the sequence to clip
+        start: Option<usize>,
+
+        #[clap(short, long, value_parser)]
+        /// Number of nucleotides from the end of the sequence to clip
+        end: Option<usize>,
+
+        #[clap(short, long, value_parser, conflicts_with_all = &["start", "end"])]
+        /// Range of nucleotides to accept (everything else is clipped)
+        /// Format: [start]..[end]
+        range: Option<String>,
+    },
+
     /// Filters same length sequences to their variable region. Useful in CRISPRi/a libraries where
     /// the variable region is prefixed and suffixed by some constant region
     ExtractVariable {
@@ -284,6 +308,23 @@ fn main() -> Result<()> {
         }
         Commands::Count { input } => {
             commands::count::run(input)?;
+        }
+        Commands::Clip {
+            input,
+            output,
+            start,
+            end,
+            range,
+        } => {
+            commands::clip::run(
+                input,
+                output,
+                start,
+                end,
+                range,
+                cli.compression_threads,
+                cli.compression_level,
+            )?;
         }
         Commands::ExtractVariable {
             input,

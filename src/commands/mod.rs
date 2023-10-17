@@ -1,4 +1,5 @@
 pub mod cat;
+pub mod clip;
 pub mod count;
 pub mod extract;
 pub mod filter;
