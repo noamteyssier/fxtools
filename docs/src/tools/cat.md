@@ -53,4 +53,13 @@ fxtools cat -i <fastx> <...> <fastx>
 
 # into pipeline
 fxtools cat -i <fastx_1> <fastx_2> <fastx_3> | fxtools filter -p "ACT"
+
+# print only sequences of records
+fxtools cat -s -i <fastx> <...> <fastx>
+
+# print only sequences of records and write as single-line
+fxtools cat -Ss -i <fastx> <...> <fastx>
+
+# print only headers of records
+fxtools cat -s -i <fastx> <...> <fastx>
 ```
