@@ -86,6 +86,25 @@ fn main() -> Result<()> {
                 cli.compression_level,
             )?;
         }
+        Commands::Multiplex {
+            input,
+            output,
+            log,
+            barcode_size,
+            seed,
+            timeout,
+        } => {
+            commands::multiplex::run(
+                input,
+                output,
+                log,
+                barcode_size,
+                seed,
+                timeout,
+                cli.compression_threads,
+                cli.compression_level,
+            )?;
+        }
         Commands::Reverse { input, output } => {
             commands::reverse::run(
                 input,

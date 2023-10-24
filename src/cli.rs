@@ -131,6 +131,33 @@ pub enum Commands {
         output: Option<String>,
     },
 
+    /// Multiplex a set of fastx files by prepending a barcode to the sequences
+    Multiplex {
+        #[clap(short, long, value_parser, multiple = true, required = true)]
+        /// Input FASTXs to multiplex
+        input: Vec<String>,
+
+        #[clap(short, long, value_parser)]
+        /// Filepath to write output to [default: stdout]
+        output: Option<String>,
+
+        #[clap(short, long, value_parser, default_value = "multiplex_log.json")]
+        /// Filepath to write barcode stats to
+        log: String,
+
+        #[clap(short, long, value_parser)]
+        /// The size of the barcode to prepend to the sequences (will be adjusted to minimum
+        /// barcode size if too small)
+        barcode_size: Option<usize>,
+
+        #[clap(short, long, value_parser)]
+        /// The random seed to use for the barcode generation
+        seed: Option<u64>,
+
+        #[clap(short, long, value_parser, default_value = "100000")]
+        timeout: u64,
+    },
+
     /// Creates the Reverse complement for a provided fastx
     Reverse {
         #[clap(short, long, value_parser)]

@@ -5,6 +5,7 @@ pub mod extract;
 pub mod filter;
 pub mod fix;
 pub mod io;
+pub mod multiplex;
 pub mod reverse;
 pub mod sample;
 pub mod sgrna_table;
