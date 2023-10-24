@@ -141,6 +141,19 @@ pub enum Commands {
         /// Filepath to write output to [default: stdout]
         output: Option<String>,
 
+        #[clap(short, long, value_parser)]
+        /// Optional whitelist of barcodes to prepend generated barcodes with
+        whitelist: Option<String>,
+
+        #[clap(
+            short = 'O',
+            long,
+            value_parser,
+            default_value = "multiplex_whitelist.txt"
+        )]
+        /// Output whitelist of barcodes to file
+        output_whitelist: String,
+
         #[clap(short, long, value_parser, default_value = "multiplex_log.json")]
         /// Filepath to write barcode stats to
         log: String,

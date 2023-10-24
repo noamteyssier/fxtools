@@ -4,7 +4,11 @@ use fxread::initialize_reader;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use serde::Serialize;
-use std::{collections::HashMap, io::Write};
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufRead, BufReader, BufWriter, Write},
+};
 
 const LEXICON: [u8; 4] = [b'A', b'C', b'G', b'T'];
 
@@ -41,6 +45,9 @@ fn generate_barcodes(
             .collect::<Vec<_>>();
         if !barcodes.contains(&sample_barcode) {
             barcodes.push(sample_barcode);
+            if barcodes.len() == n_inputs {
+                break;
+            }
         } else {
             if num_trials > timeout {
                 break;
@@ -66,10 +73,37 @@ fn verify_unique_inputs(inputs: Vec<String>) -> Result<()> {
     }
 }
 
+fn write_whitelist(
+    input_whitelist: Option<String>,
+    barcodes: &[Vec<u8>],
+    output_filename: &str,
+) -> Result<()> {
+    if let Some(input_filename) = input_whitelist {
+        eprintln!("Writing updated whitelist to {}", output_filename);
+        if input_filename == output_filename {
+            bail!("Input and output whitelist files must be different")
+        }
+        let mut writer = File::create(output_filename).map(BufWriter::new)?;
+        for barcode in barcodes {
+            let reader = File::open(&input_filename).map(BufReader::new)?;
+            for line in reader.lines() {
+                let line = line?;
+                let mut bytes = line.into_bytes();
+                bytes.splice(0..0, barcode.clone());
+                writer.write_all(&bytes)?;
+                writer.write_all(b"\n")?;
+            }
+        }
+    }
+    Ok(())
+}
+
 /// Runs the `multiplex` command.
 pub fn run(
     inputs: Vec<String>,
     output: Option<String>,
+    whitelist: Option<String>,
+    output_whitelist: String,
     log: String,
     barcode_size: Option<usize>,
     seed: Option<u64>,
@@ -107,6 +141,9 @@ pub fn run(
             write!(writer, "{}", record.as_str())?;
         }
     }
+
+    // Append barcodes to whitelist and write to whitelist output if provided
+    write_whitelist(whitelist, &sample_barcodes, &output_whitelist)?;
 
     // Generate log
     let output_log = MultiplexLog {

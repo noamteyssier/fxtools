@@ -89,6 +89,8 @@ fn main() -> Result<()> {
         Commands::Multiplex {
             input,
             output,
+            whitelist,
+            output_whitelist,
             log,
             barcode_size,
             seed,
@@ -97,6 +99,8 @@ fn main() -> Result<()> {
             commands::multiplex::run(
                 input,
                 output,
+                whitelist,
+                output_whitelist,
                 log,
                 barcode_size,
                 seed,
