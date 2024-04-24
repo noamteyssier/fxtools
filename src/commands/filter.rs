@@ -6,9 +6,9 @@ use std::io::stdin;
 
 pub fn match_regex(record: &Record, regex: &Regex, invert: bool, header: bool) -> bool {
     let pred = if header {
-        regex.is_match(&record.id())
+        regex.is_match(record.id())
     } else {
-        regex.is_match(&record.seq())
+        regex.is_match(record.seq())
     };
     if invert {
         !pred
