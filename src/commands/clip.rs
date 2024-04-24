@@ -37,11 +37,11 @@ pub fn clip_to_range(record: Record, start: Option<usize>, end: Option<usize>) -
 }
 
 fn parse_range(range: String) -> Result<(Option<usize>, Option<usize>)> {
-    if range.starts_with("..") {
-        let end = range[2..].parse::<usize>().unwrap();
+    if let Some(end) = range.strip_prefix("..") {
+        let end = end.parse::<usize>().unwrap();
         Ok((None, Some(end)))
-    } else if range.ends_with("..") {
-        let start = range[..range.len() - 2].parse::<usize>().unwrap();
+    } else if let Some(start) = range.strip_suffix("..") {
+        let start = start.parse::<usize>().unwrap();
         Ok((Some(start), None))
     } else {
         let mut range = range.split("..");
