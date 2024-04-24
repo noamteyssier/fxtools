@@ -27,7 +27,7 @@ impl Trimmer {
         }
     }
 
-    pub fn trim<'a>(&mut self, record: &'a Record) -> Option<String> {
+    pub fn trim(&mut self, record: &Record) -> Option<String> {
         self.num_records += 1;
         if let Some(idx) = memmem::find(record.seq(), self.adapter.as_bytes()) {
             self.num_trimmed += 1;
@@ -38,7 +38,7 @@ impl Trimmer {
     }
 
     fn prepare_record(&self, record: &Record, index: usize) -> String {
-        if let Some(_) = record.qual() {
+        if record.qual().is_some() {
             format!(
                 "@{}\n{}\n{}\n{}\n",
                 from_utf8(record.id()).expect("invalid utf8"),
