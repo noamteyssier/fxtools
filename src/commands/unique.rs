@@ -91,7 +91,7 @@ impl Unique {
     /// Inserts a sequence to null
     fn insert_to_null(null: &mut NullMap, record: Record) {
         null.entry(record.seq().to_owned())
-            .or_insert(Vec::new())
+            .or_default()
             .push(record);
     }
 
