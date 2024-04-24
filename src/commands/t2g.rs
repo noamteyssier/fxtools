@@ -23,8 +23,8 @@ fn get_line(record: &Record, symbol: bool, dot_version: bool) -> String {
         attributes
             .next()
             .expect("No gene id")
-            .split(".")
-            .nth(0)
+            .split('.')
+            .next()
             .expect("No gene id")
             .replace("gene_id:", "")
     };
