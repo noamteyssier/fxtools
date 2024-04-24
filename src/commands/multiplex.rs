@@ -99,6 +99,7 @@ fn write_whitelist(
 }
 
 /// Runs the `multiplex` command.
+#[allow(clippy::too_many_arguments)]
 pub fn run(
     inputs: Vec<String>,
     output: Option<String>,

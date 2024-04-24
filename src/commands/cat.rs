@@ -23,7 +23,7 @@ where
         if single_line {
             write!(writer, "{}", record.seq_str())?;
         } else {
-            write!(writer, "{}\n", record.seq_str())?;
+            writeln!(writer, "{}", record.seq_str())?;
         }
     }
     Ok(())
@@ -35,7 +35,7 @@ where
     W: Write,
 {
     for record in reader {
-        write!(writer, "{}\n", record.id_str())?;
+        writeln!(writer, "{}", record.id_str())?;
     }
     Ok(())
 }

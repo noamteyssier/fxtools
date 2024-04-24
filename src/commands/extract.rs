@@ -3,7 +3,7 @@ use anyhow::{bail, Result};
 use fxread::{initialize_reader, FastxRead, Record};
 use ndarray::{s, Array1, Array2, Axis};
 use ndarray_stats::{EntropyExt, QuantileExt};
-use spinoff::{Color, Spinner, Spinners, Streams};
+use spinoff::{spinners::Dots12, Color, Spinner, Streams};
 use std::{io::Write, str::from_utf8};
 
 /// Retrieves the sequence size of the first item in the reader
@@ -197,8 +197,8 @@ pub fn run(
     compression_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
-    let spinner = Spinner::new_with_stream(
-        Spinners::Dots12,
+    let mut spinner = Spinner::new_with_stream(
+        Dots12,
         format!("Calculating Entropy on {} Records", num_samples),
         Color::Green,
         Streams::Stderr,

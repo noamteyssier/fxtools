@@ -7,7 +7,7 @@ use std::{
 use anyhow::Result;
 use fxread::{initialize_reader, initialize_stdin_reader, Record};
 use memchr::memmem;
-use spinoff::{Color, Spinner, Spinners, Streams};
+use spinoff::{spinners::Dots12, Color, Spinner, Streams};
 
 use super::match_output_stream;
 
@@ -27,7 +27,7 @@ impl Trimmer {
         }
     }
 
-    pub fn trim<'a>(&mut self, record: &'a Record) -> Option<String> {
+    pub fn trim(&mut self, record: &Record) -> Option<String> {
         self.num_records += 1;
         if let Some(idx) = memmem::find(record.seq(), self.adapter.as_bytes()) {
             self.num_trimmed += 1;
@@ -38,7 +38,7 @@ impl Trimmer {
     }
 
     fn prepare_record(&self, record: &Record, index: usize) -> String {
-        if let Some(_) = record.qual() {
+        if record.qual().is_some() {
             format!(
                 "@{}\n{}\n{}\n{}\n",
                 from_utf8(record.id()).expect("invalid utf8"),
@@ -113,8 +113,8 @@ pub fn run(
     let mut trimmer = Trimmer::new(adapter.to_string(), trim_adapter);
     let mut writer = match_output_stream(output, compression_threads, compression_level)?;
 
-    let spinner = Spinner::new_with_stream(
-        Spinners::Dots12,
+    let mut spinner = Spinner::new_with_stream(
+        Dots12,
         format!("Trimming records with adapter: {}", adapter),
         Color::Green,
         Streams::Stderr,

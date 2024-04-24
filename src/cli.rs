@@ -19,7 +19,7 @@ pub struct Cli {
 pub enum Commands {
     /// Concatenates multiple Fastx files together
     Cat {
-        #[clap(short, long, value_parser, multiple = true, required = true)]
+        #[clap(short, long, value_parser, num_args=1.., required = true)]
         /// Input FASTX to concatenate
         inputs: Vec<String>,
 
@@ -133,7 +133,7 @@ pub enum Commands {
 
     /// Multiplex a set of fastx files by prepending a barcode to the sequences
     Multiplex {
-        #[clap(short, long, value_parser, multiple = true, required = true)]
+        #[clap(short, long, value_parser, num_args=1.., required = true)]
         /// Input FASTXs to multiplex
         input: Vec<String>,
 

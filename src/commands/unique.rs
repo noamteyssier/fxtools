@@ -1,6 +1,6 @@
 use anyhow::Result;
 use fxread::{initialize_reader, initialize_stdin_reader, FastxRead, Record};
-use spinoff::{Color, Spinner, Spinners, Streams};
+use spinoff::{spinners::Dots12, Color, Spinner, Streams};
 use std::{collections::HashMap, io::stdin};
 
 use super::{match_output_stream, write_output, write_output_with_invalid};
@@ -91,7 +91,7 @@ impl Unique {
     /// Inserts a sequence to null
     fn insert_to_null(null: &mut NullMap, record: Record) {
         null.entry(record.seq().to_owned())
-            .or_insert(Vec::new())
+            .or_default()
             .push(record);
     }
 
@@ -120,8 +120,8 @@ pub fn run(
         initialize_stdin_reader(stdin().lock())
     }?;
 
-    let spinner = Spinner::new_with_stream(
-        Spinners::Dots12,
+    let mut spinner = Spinner::new_with_stream(
+        Dots12,
         "Determining Unique Records".to_string(),
         Color::Green,
         Streams::Stderr,
