@@ -219,6 +219,10 @@ pub enum Commands {
         /// Whether to include the sequence in the output table [default: false]
         include_sequence: bool,
 
+        #[clap(short, long)]
+        /// Ignore TSS information in the header, default is to separate by TSS
+        tss_ignore: bool,
+
         #[clap(short, long, value_parser)]
         /// Specify ordering of columns as 3 value string ([Hh]eader, [Ss]equence, [Gg]ene).
         /// [default: ghs]
