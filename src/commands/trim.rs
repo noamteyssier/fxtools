@@ -7,7 +7,7 @@ use std::{
 use anyhow::Result;
 use fxread::{initialize_reader, initialize_stdin_reader, Record};
 use memchr::memmem;
-use spinoff::{Color, Spinner, Spinners, Streams};
+use spinoff::{spinners::Dots12, Color, Spinner, Streams};
 
 use super::match_output_stream;
 
@@ -113,8 +113,8 @@ pub fn run(
     let mut trimmer = Trimmer::new(adapter.to_string(), trim_adapter);
     let mut writer = match_output_stream(output, compression_threads, compression_level)?;
 
-    let spinner = Spinner::new_with_stream(
-        Spinners::Dots12,
+    let mut spinner = Spinner::new_with_stream(
+        Dots12,
         format!("Trimming records with adapter: {}", adapter),
         Color::Green,
         Streams::Stderr,

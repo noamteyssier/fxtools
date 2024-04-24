@@ -1,7 +1,7 @@
 use anyhow::Result;
 use bstr::BString;
 use fxread::{initialize_reader, initialize_stdin_reader, FastxRead, Record};
-use spinoff::{Color, Spinner, Spinners, Streams};
+use spinoff::{spinners::Dots12, Color, Spinner, Streams};
 use std::{
     collections::HashMap,
     fs::File,
@@ -198,8 +198,8 @@ pub fn run(
         initialize_stdin_reader(stdin().lock())
     }?;
 
-    let spinner = Spinner::new_with_stream(
-        Spinners::Dots12,
+    let mut spinner = Spinner::new_with_stream(
+        Dots12,
         "Mapping sgRNAs to Parent Genes".to_string(),
         Color::Green,
         Streams::Stderr,
