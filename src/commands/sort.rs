@@ -23,17 +23,14 @@ fn join_readers(
     reader_r1: Box<dyn FastxRead<Item = Record>>,
     reader_r2: Box<dyn FastxRead<Item = Record>>,
 ) -> Vec<(Record, Record)> {
-    reader_r1
-        .into_iter()
-        .zip(reader_r2.into_iter())
-        .collect::<Vec<_>>()
+    reader_r1.into_iter().zip(reader_r2).collect::<Vec<_>>()
 }
 
-fn sort_records(records: &mut Vec<Record>) {
+fn sort_records(records: &mut [Record]) {
     records.sort_by(|a, b| a.seq().cmp(b.seq()));
 }
 
-fn sort_paired_records(records: &mut Vec<(Record, Record)>, sort_by_r1: bool) {
+fn sort_paired_records(records: &mut [(Record, Record)], sort_by_r1: bool) {
     if sort_by_r1 {
         records.sort_by(|a, b| a.0.seq().cmp(b.0.seq()));
     } else {
