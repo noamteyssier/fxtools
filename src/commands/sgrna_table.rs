@@ -121,7 +121,7 @@ impl Table {
     ) -> HashMap<Vec<u8>, Vec<Record>> {
         reader.fold(HashMap::new(), |mut table, record| {
             let gene = Self::parse_header(&record, tss_ignore);
-            table.entry(gene).or_insert(Vec::new()).push(record);
+            table.entry(gene).or_default().push(record);
             table
         })
     }
