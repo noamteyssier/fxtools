@@ -1,4 +1,5 @@
 use anyhow::Result;
+use bstr::BString;
 use fxread::{initialize_reader, initialize_stdin_reader, FastxRead, Record};
 use spinoff::{Color, Spinner, Spinners, Streams};
 use std::{
@@ -14,8 +15,8 @@ struct Table {
 }
 impl Table {
     /// creates a table from a [`FastxRead`] reader.
-    pub fn from_reader(reader: Box<dyn FastxRead<Item = Record>>) -> Self {
-        let map = Self::build(reader);
+    pub fn from_reader(reader: Box<dyn FastxRead<Item = Record>>, tss_ignore: bool) -> Self {
+        let map = Self::build(reader, tss_ignore);
         Self { map }
     }
 
@@ -114,18 +115,35 @@ impl Table {
     }
 
     /// main build iterator
-    fn build(reader: Box<dyn FastxRead<Item = Record>>) -> HashMap<Vec<u8>, Vec<Record>> {
+    fn build(
+        reader: Box<dyn FastxRead<Item = Record>>,
+        tss_ignore: bool,
+    ) -> HashMap<Vec<u8>, Vec<Record>> {
         reader.fold(HashMap::new(), |mut table, record| {
-            let gene = Self::parse_header(&record);
+            let gene = Self::parse_header(&record, tss_ignore);
             table.entry(gene).or_insert(Vec::new()).push(record);
             table
         })
     }
 
     /// parses the gene name from the record header
-    fn parse_header(record: &Record) -> Vec<u8> {
+    fn parse_header(record: &Record, tss_ignore: bool) -> Vec<u8> {
         match record.id().split(|b| *b == b'_').next() {
-            Some(split) => split.to_owned(),
+            Some(split) => {
+                // let mut gene_name = split.to_vec();
+                let mut gene_name: BString = split.to_owned().into();
+                if tss_ignore | record.id().ends_with(b"P1P2") {
+                    gene_name.into()
+                } else if record.id().ends_with(b"P1") {
+                    gene_name.extend_from_slice(b"_P1");
+                    gene_name.into()
+                } else if record.id().ends_with(b"P2") {
+                    gene_name.extend_from_slice(b"_P2");
+                    gene_name.into()
+                } else {
+                    gene_name.into()
+                }
+            }
             None => record.id().to_owned(),
         }
     }
@@ -158,6 +176,7 @@ pub fn run(
     input: Option<String>,
     output: Option<String>,
     include_sequence: bool,
+    tss_ignore: bool,
     delim: Option<char>,
     reorder: Option<String>,
 ) -> Result<()> {
@@ -185,7 +204,7 @@ pub fn run(
         Color::Green,
         Streams::Stderr,
     );
-    let table = Table::from_reader(reader);
+    let table = Table::from_reader(reader, tss_ignore);
     spinner.stop_and_persist(
         "✔",
         &format!(
@@ -219,7 +238,7 @@ mod test {
     #[test]
     fn table_fasta() {
         let reader = fasta_reader();
-        let table = Table::from_reader(reader);
+        let table = Table::from_reader(reader, true);
         assert_eq!(table.num_records(), 3);
         assert_eq!(table.num_genes(), 2)
     }
@@ -227,7 +246,7 @@ mod test {
     #[test]
     fn table_fastq() {
         let reader = fastq_reader();
-        let table = Table::from_reader(reader);
+        let table = Table::from_reader(reader, true);
         assert_eq!(table.num_records(), 3);
         assert_eq!(table.num_genes(), 2)
     }

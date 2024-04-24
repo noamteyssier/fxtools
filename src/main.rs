@@ -138,10 +138,18 @@ fn main() -> Result<()> {
             input,
             output,
             include_sequence,
+            tss_ignore,
             delim,
             reorder,
         } => {
-            commands::sgrna_table::run(input, output, include_sequence, delim, reorder)?;
+            commands::sgrna_table::run(
+                input,
+                output,
+                include_sequence,
+                tss_ignore,
+                delim,
+                reorder,
+            )?;
         }
         Commands::Sort {
             r1,
