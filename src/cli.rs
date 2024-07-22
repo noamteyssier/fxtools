@@ -1,5 +1,7 @@
 use clap::{Parser, Subcommand};
 
+use crate::commands::csv::Delimiter;
+
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 pub struct Cli {
@@ -75,6 +77,30 @@ pub enum Commands {
         /// Range of nucleotides to accept (everything else is clipped)
         /// Format: [start]..[end]
         range: Option<String>,
+    },
+
+    /// Converts a CSV file to a FASTA file
+    CsvToFasta {
+        #[clap(short, long, value_parser)]
+        /// Input CSV to Convert
+        input: Option<String>,
+
+        /// Filepath to write output to [default: stdout]
+        /// If not provided, will write to stdout
+        #[clap(short, long, value_parser)]
+        output: Option<String>,
+
+        /// Column to use as the header
+        #[clap(short, long, value_parser, default_value = "sgrna")]
+        header_col: String,
+
+        /// Column to use as the sequence
+        #[clap(short, long, value_parser, default_value = "sequence")]
+        sequence_col: String,
+
+        /// Delimiter used in the CSV file
+        #[clap(short, long, value_parser, default_value = "comma")]
+        delim: Delimiter,
     },
 
     /// Create all unambiguous one-off sequences for a collection of sequences

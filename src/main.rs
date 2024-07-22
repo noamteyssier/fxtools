@@ -46,6 +46,23 @@ fn main() -> Result<()> {
                 cli.compression_level,
             )?;
         }
+        Commands::CsvToFasta {
+            input,
+            output,
+            header_col,
+            sequence_col,
+            delim,
+        } => {
+            commands::csv::run(
+                input,
+                output,
+                header_col,
+                sequence_col,
+                delim,
+                cli.compression_threads,
+                cli.compression_level,
+            )?;
+        }
         Commands::Disambiseq {
             input,
             output,

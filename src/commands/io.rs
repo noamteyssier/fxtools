@@ -1,11 +1,31 @@
 use anyhow::Result;
+use flate2::read::MultiGzDecoder;
 use fxread::Record;
 use gzp::deflate::Gzip;
 use gzp::par::compress::{ParCompress, ParCompressBuilder};
 use gzp::Compression;
 use std::borrow::{Borrow, BorrowMut};
-use std::io::Write;
+use std::io::{stdin, BufReader, Read, Write};
 use std::{fs::File, io::stdout, str::from_utf8};
+
+/// Matches the input to a reader stream
+pub fn match_input_stream(input: Option<String>) -> Result<Box<dyn Read>> {
+    match input {
+        Some(path) => {
+            if path.ends_with(".gz") {
+                let file = File::open(path)?;
+                let buffer = BufReader::new(file);
+                let reader = MultiGzDecoder::new(buffer);
+                Ok(Box::new(reader))
+            } else {
+                let file = File::open(path)?;
+                let buffer = BufReader::new(file);
+                Ok(Box::new(buffer))
+            }
+        }
+        None => Ok(Box::new(BufReader::new(stdin()))),
+    }
+}
 
 /// Matches the output to a writer stream
 pub fn match_output_stream(

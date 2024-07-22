@@ -1,6 +1,7 @@
 pub mod cat;
 pub mod clip;
 pub mod count;
+pub mod csv;
 pub mod disambiseq;
 pub mod extract;
 pub mod filter;
