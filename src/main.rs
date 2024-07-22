@@ -46,6 +46,14 @@ fn main() -> Result<()> {
                 cli.compression_level,
             )?;
         }
+        Commands::Disambiseq { input, output } => {
+            commands::disambiseq::run(
+                input,
+                output,
+                cli.compression_threads,
+                cli.compression_level,
+            )?;
+        }
         Commands::ExtractVariable {
             input,
             output,
