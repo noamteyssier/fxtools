@@ -91,11 +91,11 @@ pub enum Commands {
         output: Option<String>,
 
         /// Column to use as the header
-        #[clap(short, long, value_parser)]
+        #[clap(short, long, value_parser, default_value = "sgrna")]
         header_col: String,
 
         /// Column to use as the sequence
-        #[clap(short, long, value_parser)]
+        #[clap(short, long, value_parser, default_value = "sequence")]
         sequence_col: String,
 
         /// Delimiter used in the CSV file
