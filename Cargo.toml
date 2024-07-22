@@ -12,21 +12,21 @@ categories = ["command-line-utilities", "science"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fxread = "0.2.11"
-clap = { version = "4.5.4", features = ["derive"] }
+fxread = "0.2.12"
+clap = { version = "4.5.9", features = ["derive"] }
 anyhow = "1"
 ndarray-stats = "0.5.1"
 ndarray = "0.15.6"
 spinoff = "0.8.0"
-memchr = "2.5.0"
+memchr = "2.7.4"
 gzp = { version = "0.11.3", features = [
   "deflate_rust",
 ], default-features = false }
-regex = "1.9.6"
+regex = "1.10.5"
 rand = "0.8.5"
 rand_chacha = "0.3.1"
-serde = { version = "1.0.189", features = ["derive"] }
-serde_json = "1.0.107"
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.120"
 bstr = "1.9.1"
 disambiseq = "0.1.11"
 hashbrown = "0.14.5"
