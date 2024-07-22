@@ -85,6 +85,9 @@ pub enum Commands {
         #[clap(short, long, value_parser)]
         /// Filepath to write output to [default: stdout]
         output: Option<String>,
+        #[clap(short = 'p', long, value_parser, default_value = "false")]
+        /// Include the original (parent) sequence in the output
+        include_parents: bool,
     },
 
     /// Filters same length sequences to their variable region. Useful in CRISPRi/a libraries where

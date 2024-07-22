@@ -34,6 +34,7 @@ where
 pub fn run(
     input: Option<String>,
     output: Option<String>,
+    include_parents: bool,
     compression_threads: Option<usize>,
     compression_level: Option<usize>,
 ) -> Result<()> {
@@ -57,12 +58,14 @@ pub fn run(
     // Match the output stream
     let mut writer = match_output_stream(output, compression_threads, compression_level)?;
 
-    // Iterate through parent sequences
-    for parent in seq_map.keys() {
-        let header = seq_map.get(parent).unwrap();
-        let header_str = std::str::from_utf8(header)?;
-        let parent_str = std::str::from_utf8(parent)?;
-        writeln!(writer, ">{header_str}\n{parent_str}")?;
+    if include_parents {
+        // Iterate through parent sequences
+        for parent in seq_map.keys() {
+            let header = seq_map.get(parent).unwrap();
+            let header_str = std::str::from_utf8(header)?;
+            let parent_str = std::str::from_utf8(parent)?;
+            writeln!(writer, ">{header_str}\n{parent_str}")?;
+        }
     }
 
     // Iterate through unambiguous mutants

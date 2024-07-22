@@ -46,10 +46,15 @@ fn main() -> Result<()> {
                 cli.compression_level,
             )?;
         }
-        Commands::Disambiseq { input, output } => {
+        Commands::Disambiseq {
+            input,
+            output,
+            include_parents,
+        } => {
             commands::disambiseq::run(
                 input,
                 output,
+                include_parents,
                 cli.compression_threads,
                 cli.compression_level,
             )?;
