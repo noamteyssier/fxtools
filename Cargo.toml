@@ -15,7 +15,7 @@ categories = ["command-line-utilities", "science"]
 fxread = "0.2.12"
 clap = { version = "4.5.9", features = ["derive"] }
 anyhow = "1"
-ndarray-stats = "0.5.1"
+ndarray-stats = "0.6.0"
 ndarray = "0.15.6"
 spinoff = "0.8.0"
 memchr = "2.7.4"
