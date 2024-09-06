@@ -16,7 +16,7 @@ fxread = "0.2.12"
 clap = { version = "4.5.9", features = ["derive"] }
 anyhow = "1"
 ndarray-stats = "0.5.1"
-ndarray = "0.15.6"
+ndarray = "0.16.1"
 spinoff = "0.8.0"
 memchr = "2.7.4"
 gzp = { version = "0.11.3", features = [
