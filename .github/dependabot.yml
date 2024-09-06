@@ -4,3 +4,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      ndarray-packages:
+        patterns:
+          - "ndarray*"
