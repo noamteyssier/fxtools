@@ -1,6 +1,6 @@
 [package]
 name = "fxtools"
-version = "0.2.36"
+version = "0.2.37"
 edition = "2021"
 description = "A collection of commandline Fasta/Fastq utility tools"
 documentation = "https://docs.rs/fxtools"
@@ -20,7 +20,7 @@ ndarray = "0.16.1"
 spinoff = "0.8.0"
 memchr = "2.7.4"
 gzp = { version = "0.11.3", features = [
-    "deflate_rust",
+  "deflate_rust",
 ], default-features = false }
 regex = "1.10.5"
 rand = "0.8.5"
@@ -29,6 +29,6 @@ serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.120"
 bstr = "1.9.1"
 disambiseq = "0.1.11"
-hashbrown = "0.14.5"
+hashbrown = "0.15.0"
 csv = "1.3.0"
 flate2 = "1.0.30"
